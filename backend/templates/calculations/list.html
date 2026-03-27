@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Histórico de cálculos{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Histórico de cálculos</h1>
+  <a href="{% url 'calculations:new' %}" class="btn btn-primary">+ Novo cálculo</a>
+</div>
+
+{% if calculations %}
+<div class="card" style="padding:0; overflow:hidden;">
+  <table>
+    <thead>
+      <tr>
+        <th>Produto</th>
+        <th>Vendas esperadas</th>
+        <th>Ingredientes</th>
+        <th>Fixos</th>
+        <th>Despesas</th>
+        <th>Custo total</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for calc in calculations %}
+      <tr>
+        <td><strong>{{ calc.product.name }}</strong></td>
+        <td>{{ calc.expected_monthly_sales }} un.</td>
+        <td>R$ {{ calc.ingredient_cost|floatformat:2 }}</td>
+        <td>R$ {{ calc.fixed_cost_share|floatformat:2 }}</td>
+        <td>R$ {{ calc.expense_share|floatformat:2 }}</td>
+        <td>
+          <span style="font-weight:600; color:#f5a623;">
+            R$ {{ calc.total_cost|floatformat:2 }}
+          </span>
+        </td>
+        <td style="color:#888; font-size:.85rem;">
+          {{ calc.created_at|date:"d/m/Y" }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+  <div class="card" style="text-align:center; padding:3rem; color:#888;">
+    Nenhum cálculo realizado ainda.<br>
+    <a href="{% url 'calculations:new' %}" class="btn btn-primary" style="margin-top:1rem;">
+      Fazer primeiro cálculo
+    </a>
+  </div>
+{% endif %}
+{% endblock %}

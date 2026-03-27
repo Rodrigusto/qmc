@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>{{ product.name }}</h1>
+  <a href="{% url 'products:list' %}" class="btn btn-outline">← Voltar</a>
+</div>
+
+<div class="card">
+  <div class="card-title">Receita</div>
+  <table style="margin-top:.75rem;">
+    <thead>
+      <tr>
+        <th>Ingrediente</th>
+        <th>Unidade</th>
+        <th>Quantidade</th>
+        <th>Custo unitário</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in product.recipe_items.all %}
+      <tr>
+        <td>{{ item.ingredient.name }}</td>
+        <td>{{ item.ingredient.unit }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>R$ {{ item.ingredient.cost_per_unit|floatformat:4 }}</td>
+        <td><strong>R$ {{ item.total_cost|floatformat:4 }}</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="margin-top:1rem; padding-top:1rem; border-top:2px solid #f0efe8;
+              display:flex; justify-content:flex-end; gap:1rem; align-items:center;">
+    <span style="color:#666; font-size:.9rem;">Total ingredientes</span>
+    <span style="font-size:1.25rem; font-weight:700; color:#f5a623;">
+      R$ {{ product.ingredient_cost|floatformat:2 }}
+    </span>
+  </div>
+</div>
+
+<div style="margin-top:1rem;">
+  <a href="{% url 'calculations:new' %}?product={{ product.pk }}" class="btn btn-primary">
+    Calcular custo completo
+  </a>
+</div>
+{% endblock %}

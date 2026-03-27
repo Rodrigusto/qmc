@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Novo cálculo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Calcular custo por unidade</h1>
+  <a href="{% url 'calculations:list' %}" class="btn btn-outline">← Voltar</a>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="product">Produto</label>
+      <select name="product_id" id="product" required>
+        <option value="">Selecione...</option>
+        {% for p in products %}
+          <option value="{{ p.pk }}"
+            {% if selected_product == p.pk|stringformat:"s" %}selected{% endif %}>
+            {{ p.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="sales">Vendas mensais esperadas</label>
+      <input
+        type="number" name="expected_monthly_sales" id="sales"
+        min="1" placeholder="ex: 1000" required
+        value="{{ request.POST.expected_monthly_sales }}"
+      >
+      <small style="color:#888; font-size:.8rem; margin-top:4px; display:block;">
+        Quantos hambúrgueres você espera vender no mês?
+      </small>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Calcular</button>
+  </form>
+</div>
+
+{% if result %}
+<div class="card" style="margin-top:1.5rem;">
+  <div class="card-title" style="margin-bottom:1rem;">
+    Resultado — {{ result.product.name }}
+  </div>
+
+  <div class="cost-row">
+    <span>Ingredientes</span>
+    <span class="cost-value">R$ {{ result.ingredient_cost|floatformat:2 }}</span>
+  </div>
+  <div class="cost-row">
+    <span>Custos fixos rateados</span>
+    <span class="cost-value">R$ {{ result.fixed_cost_share|floatformat:2 }}</span>
+  </div>
+  <div class="cost-row">
+    <span>Despesas rateadas</span>
+    <span class="cost-value">R$ {{ result.expense_share|floatformat:2 }}</span>
+  </div>
+  <div class="cost-row total">
+    <span>Custo total por unidade</span>
+    <span class="cost-value" style="color:#f5a623;">
+      R$ {{ result.total_cost|floatformat:2 }}
+    </span>
+  </div>
+
+  <div style="margin-top:1.25rem; padding:1rem; background:#f5f5f0;
+              border-radius:8px; font-size:.85rem; color:#666;">
+    Baseado em <strong>{{ result.expected_monthly_sales }} unidades/mês</strong>
+    · Calculado em {{ result.created_at|date:"d/m/Y H:i" }}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Produtos{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Produtos</h1>
+  <a href="/admin/products/product/add/" class="btn btn-primary">+ Novo produto</a>
+</div>
+
+{% if products %}
+  {% for product in products %}
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <div class="card-title">{{ product.name }}</div>
+        {% if product.description %}
+          <div class="card-sub">{{ product.description }}</div>
+        {% endif %}
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:1.1rem; font-weight:600; color:#f5a623;">
+          R$ {{ product.ingredient_cost|floatformat:2 }}
+        </div>
+        <div class="card-sub">custo ingredientes</div>
+      </div>
+    </div>
+
+    {% if product.recipe_items.all %}
+    <div style="margin-top:1rem;">
+      <table>
+        <thead>
+          <tr>
+            <th>Ingrediente</th>
+            <th>Quantidade</th>
+            <th>Custo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in product.recipe_items.all %}
+          <tr>
+            <td>{{ item.ingredient.name }}</td>
+            <td>{{ item.quantity }} {{ item.ingredient.unit }}</td>
+            <td>R$ {{ item.total_cost|floatformat:4 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div style="margin-top:1rem; display:flex; gap:.75rem;">
+      <a href="{% url 'products:detail' product.pk %}" class="btn btn-outline">
+        Ver detalhes
+      </a>
+      <a href="{% url 'calculations:new' %}?product={{ product.pk }}" class="btn btn-primary">
+        Calcular custo
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+
+{% else %}
+  <div class="card" style="text-align:center; padding:3rem; color:#888;">
+    Nenhum produto cadastrado ainda.<br>
+    <a href="/admin/products/product/add/" class="btn btn-primary" style="margin-top:1rem;">
+      Cadastrar primeiro produto
+    </a>
+  </div>
+{% endif %}
+{% endblock %}
