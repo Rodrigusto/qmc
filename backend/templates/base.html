@@ -159,6 +159,14 @@
      class="{% if request.resolver_match.app_name == 'products' %}active{% endif %}">
     Produtos
   </a>
+  <a href="{% url 'purchases:list' %}"
+    class="{% if request.resolver_match.app_name == 'purchases' %}active{% endif %}">
+    Compras
+  </a>
+  <a href="{% url 'purchases:stock' %}"
+    class="{% if request.resolver_match.app_name == 'purchases' %}active{% endif %}">
+    Estoque
+  </a>
   <a href="{% url 'calculations:list' %}"
      class="{% if request.resolver_match.app_name == 'calculations' %}active{% endif %}">
     Cálculos

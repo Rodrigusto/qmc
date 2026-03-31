@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Nova compra{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Registrar compra</h1>
+  <a href="{% url 'purchases:list' %}" class="btn btn-outline">← Voltar</a>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-group">
+        <label>Fornecedor</label>
+        <select name="supplier" required>
+          <option value="">Selecione...</option>
+          {% for s in suppliers %}
+            <option value="{{ s.pk }}">{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Data da compra</label>
+        <input type="date" name="date" value="{{ today }}" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Observações (opcional)</label>
+      <input type="text" name="note" placeholder="Ex: compra do mercado central">
+    </div>
+
+    <!-- itens dinâmicos -->
+    <div style="margin:1.5rem 0 .75rem; font-weight:500; font-size:.95rem;">
+      Itens da compra
+    </div>
+
+    <table id="items-table" style="margin-bottom:.75rem;">
+      <thead>
+        <tr>
+          <th style="width:40%">Ingrediente</th>
+          <th style="width:20%">Quantidade</th>
+          <th style="width:20%">Valor total (R$)</th>
+          <th style="width:15%">Custo/unid</th>
+          <th style="width:5%"></th>
+        </tr>
+      </thead>
+      <tbody id="items-body">
+        <tr class="item-row">
+          <td>
+            <select name="ingredient[]" required onchange="calcUnit(this)">
+              <option value="">Selecione...</option>
+              {% for i in ingredients %}
+                <option value="{{ i.pk }}" data-unit="{{ i.unit }}">{{ i.name }} ({{ i.unit }})</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td><input type="number" name="quantity[]" min="0.001" step="0.001" placeholder="0" oninput="calcUnit(this)" required></td>
+          <td><input type="number" name="total_price[]" min="0.01" step="0.01" placeholder="0,00" oninput="calcUnit(this)" required></td>
+          <td class="unit-cost" style="font-size:.85rem; color:#888;">—</td>
+          <td><button type="button" onclick="removeRow(this)" style="background:none;border:none;cursor:pointer;color:#e24b4a;font-size:1.1rem;">✕</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button type="button" onclick="addRow()" class="btn btn-outline" style="margin-bottom:1.5rem;">
+      + Adicionar item
+    </button>
+
+    <div style="border-top:1px solid #f0efe8; padding-top:1rem; display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:.9rem; color:#666;">
+        Total: <strong id="grand-total" style="color:#f5a623;">R$ 0,00</strong>
+      </div>
+      <button type="submit" class="btn btn-primary">Salvar compra</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const ingredientOptions = `{% for i in ingredients %}<option value="{{ i.pk }}" data-unit="{{ i.unit }}">{{ i.name }} ({{ i.unit }})</option>{% endfor %}`;
+
+  function calcUnit(el) {
+    const row      = el.closest('.item-row');
+    const qty      = parseFloat(row.querySelector('[name="quantity[]"]').value) || 0;
+    const price    = parseFloat(row.querySelector('[name="total_price[]"]').value) || 0;
+    const unitCell = row.querySelector('.unit-cost');
+    unitCell.textContent = qty > 0 ? `R$ ${(price / qty).toFixed(4)}` : '—';
+    updateTotal();
+  }
+
+  function updateTotal() {
+    let total = 0;
+    document.querySelectorAll('[name="total_price[]"]').forEach(i => {
+      total += parseFloat(i.value) || 0;
+    });
+    document.getElementById('grand-total').textContent =
+      'R$ ' + total.toFixed(2).replace('.', ',');
+  }
+
+  function addRow() {
+    const tbody = document.getElementById('items-body');
+    const tr    = document.createElement('tr');
+    tr.className = 'item-row';
+    tr.innerHTML = `
+      <td>
+        <select name="ingredient[]" onchange="calcUnit(this)">
+          <option value="">Selecione...</option>
+          ${ingredientOptions}
+        </select>
+      </td>
+      <td><input type="number" name="quantity[]" min="0.001" step="0.001" placeholder="0" oninput="calcUnit(this)"></td>
+      <td><input type="number" name="total_price[]" min="0.01" step="0.01" placeholder="0,00" oninput="calcUnit(this)"></td>
+      <td class="unit-cost" style="font-size:.85rem; color:#888;">—</td>
+      <td><button type="button" onclick="removeRow(this)" style="background:none;border:none;cursor:pointer;color:#e24b4a;font-size:1.1rem;">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function removeRow(btn) {
+    const rows = document.querySelectorAll('.item-row');
+    if (rows.length > 1) {
+      btn.closest('.item-row').remove();
+      updateTotal();
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Estoque atual{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Estoque atual</h1>
+  <a href="{% url 'purchases:new' %}" class="btn btn-primary">+ Nova compra</a>
+</div>
+
+{% if stocks %}
+<div class="card" style="padding:0; overflow:hidden;">
+  <table>
+    <thead>
+      <tr>
+        <th>Ingrediente</th>
+        <th>Unidade</th>
+        <th>Saldo</th>
+        <th>Custo médio/unid</th>
+        <th>Valor em estoque</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stock in stocks %}
+      <tr>
+        <td><strong>{{ stock.ingredient.name }}</strong></td>
+        <td>{{ stock.ingredient.unit }}</td>
+        <td>{{ stock.quantity|floatformat:3 }}</td>
+        <td>R$ {{ stock.ingredient.cost_per_unit|floatformat:4 }}</td>
+        <td>R$ {{ stock.current_value|floatformat:2 }}</td>
+        <td>
+          {% if stock.is_low %}
+            <span class="badge badge-red">⚠ Estoque baixo</span>
+          {% else %}
+            <span class="badge badge-green">✓ Ok</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+  <div class="card" style="text-align:center; padding:3rem; color:#888;">
+    Nenhum item em estoque ainda.<br>
+    <a href="{% url 'purchases:new' %}" class="btn btn-primary" style="margin-top:1rem;">
+      Registrar primeira compra
+    </a>
+  </div>
+{% endif %}
+{% endblock %}

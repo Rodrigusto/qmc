@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'ingredients',
     'products',
     'calculations',
+    'purchases',
 ]
 
 # CRÍTICO: antes da primeira migration
