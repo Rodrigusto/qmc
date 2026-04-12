@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Nova previsão de vendas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Previsão de vendas</h1>
+  <a href="{% url 'calculations:forecast_list' %}" class="btn btn-outline">← Voltar</a>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+      <div class="form-group">
+        <label>Mês</label>
+        <select name="month">
+          {% for m in "123456789101112"|make_list %}{% endfor %}
+          <option value="1"  {% if current_month == 1  %}selected{% endif %}>Janeiro</option>
+          <option value="2"  {% if current_month == 2  %}selected{% endif %}>Fevereiro</option>
+          <option value="3"  {% if current_month == 3  %}selected{% endif %}>Março</option>
+          <option value="4"  {% if current_month == 4  %}selected{% endif %}>Abril</option>
+          <option value="5"  {% if current_month == 5  %}selected{% endif %}>Maio</option>
+          <option value="6"  {% if current_month == 6  %}selected{% endif %}>Junho</option>
+          <option value="7"  {% if current_month == 7  %}selected{% endif %}>Julho</option>
+          <option value="8"  {% if current_month == 8  %}selected{% endif %}>Agosto</option>
+          <option value="9"  {% if current_month == 9  %}selected{% endif %}>Setembro</option>
+          <option value="10" {% if current_month == 10 %}selected{% endif %}>Outubro</option>
+          <option value="11" {% if current_month == 11 %}selected{% endif %}>Novembro</option>
+          <option value="12" {% if current_month == 12 %}selected{% endif %}>Dezembro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Ano</label>
+        <input type="number" name="year" value="{{ current_year }}" min="2024" max="2099">
+      </div>
+    </div>
+
+    <div style="font-weight:500; margin-bottom:.75rem;">
+      Unidades previstas por produto
+    </div>
+
+    {% for product in products %}
+    <div style="display:grid; grid-template-columns:1fr 180px; gap:1rem; align-items:center; padding:.5rem 0; border-bottom:1px solid #f0efe8;">
+      <div>
+        <input type="hidden" name="product_id[]" value="{{ product.pk }}">
+        <span style="font-size:.95rem;">{{ product.name }}</span>
+        <span class="card-sub" style="margin-left:.5rem;">
+          custo ingredientes: R$ {{ product.ingredient_cost|floatformat:2 }}
+        </span>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <input
+          type="number" name="expected_units[]"
+          min="0" placeholder="0 unidades"
+          style="text-align:right;"
+        >
+      </div>
+    </div>
+    {% endfor %}
+
+    <div style="margin-top:1.5rem; text-align:right;">
+      <button type="submit" class="btn btn-primary">Salvar previsão</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

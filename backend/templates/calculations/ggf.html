@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}GGF — Gasto Geral de Funcionamento{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>GGF — Gasto Geral de Funcionamento</h1>
+</div>
+
+<!-- Seletor de período -->
+<div class="card" style="margin-bottom:1rem;">
+  <form method="get" style="display:flex; gap:1rem; align-items:flex-end;">
+    <div class="form-group" style="margin:0; min-width:160px;">
+      <label>Mês</label>
+      <select name="month">
+        {% for num, nome in months %}
+          <option value="{{ num }}" {% if num == month %}selected{% endif %}>{{ nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin:0; min-width:100px;">
+      <label>Ano</label>
+      <input type="number" name="year" value="{{ year }}" min="2024" max="2099">
+    </div>
+    <button type="submit" class="btn btn-outline">Calcular</button>
+  </form>
+</div>
+
+{% if data.error %}
+  <div class="card" style="text-align:center; padding:2rem; color:#888;">
+    {{ data.error }}<br>
+    <a href="{% url 'calculations:forecast_new' %}" class="btn btn-primary" style="margin-top:1rem;">
+      Cadastrar previsão de vendas
+    </a>
+  </div>
+{% else %}
+
+<!-- Resumo do GGF -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1rem;">
+  <div class="card" style="text-align:center;">
+    <div class="card-sub">Custos fixos</div>
+    <div style="font-size:1.3rem; font-weight:600; color:#0F6E56; margin-top:.25rem;">
+      R$ {{ data.total_fixed|floatformat:2 }}
+    </div>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div class="card-sub">Despesas do mês</div>
+    <div style="font-size:1.3rem; font-weight:600; color:#854F0B; margin-top:.25rem;">
+      R$ {{ data.total_expenses|floatformat:2 }}
+    </div>
+  </div>
+  <div class="card" style="text-align:center; border:2px solid #f5a623;">
+    <div class="card-sub">GGF total</div>
+    <div style="font-size:1.3rem; font-weight:600; color:#f5a623; margin-top:.25rem;">
+      R$ {{ data.ggf_total|floatformat:2 }}
+    </div>
+  </div>
+</div>
+
+<!-- Rateio por produto -->
+<div class="card">
+  <div class="card-title" style="margin-bottom:1rem;">Rateio por produto</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Produto</th>
+        <th>Unidades previstas</th>
+        <th>Custo ingredientes</th>
+        <th>Proporção GGF</th>
+        <th>GGF / unidade</th>
+        <th>Custo total / unidade</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in data.products %}
+      <tr>
+        <td><strong>{{ item.product.name }}</strong></td>
+        <td>{{ item.expected_units|floatformat:0 }} un.</td>
+        <td>R$ {{ item.ingredient_cost|floatformat:2 }}</td>
+        <td>
+          <span class="badge badge-amber">
+            {{ item.proporcao|floatformat:1 }}%
+          </span>
+        </td>
+        <td>R$ {{ item.ggf_per_unit|floatformat:4 }}</td>
+        <td>
+          <strong style="color:#f5a623; font-size:1rem;">
+            R$ {{ item.total_cost|floatformat:2 }}
+          </strong>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Detalhamento visual por produto -->
+{% for item in data.products %}
+<div class="card" style="margin-top:.75rem;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem;">
+    <div class="card-title">{{ item.product.name }}</div>
+    <span class="badge badge-amber">{{ item.proporcao|floatformat:1 }}% do GGF</span>
+  </div>
+  <div class="cost-row">
+    <span>Ingredientes</span>
+    <span class="cost-value">R$ {{ item.ingredient_cost|floatformat:4 }}</span>
+  </div>
+  <div class="cost-row">
+    <span>GGF rateado ({{ item.proporcao|floatformat:1 }}% ÷ {{ item.expected_units|floatformat:0 }} un.)</span>
+    <span class="cost-value">R$ {{ item.ggf_per_unit|floatformat:4 }}</span>
+  </div>
+  <div class="cost-row total">
+    <span>Custo total por unidade</span>
+    <span class="cost-value" style="color:#f5a623;">R$ {{ item.total_cost|floatformat:2 }}</span>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Salvar cálculo -->
+<form method="post" style="margin-top:1.5rem; text-align:right;">
+  {% csrf_token %}
+  <input type="hidden" name="month" value="{{ month }}">
+  <input type="hidden" name="year"  value="{{ year }}">
+  <button type="submit" class="btn btn-primary">
+    Salvar cálculos no histórico
+  </button>
+</form>
+
+{% endif %}
+{% endblock %}

@@ -159,6 +159,14 @@
      class="{% if request.resolver_match.app_name == 'products' %}active{% endif %}">
     Produtos
   </a>
+  <a href="{% url 'calculations:forecast_list' %}"
+   class="{% if request.resolver_match.app_name == 'calculations' %}active{% endif %}">
+  Previsão
+</a>
+<a href="{% url 'calculations:ggf' %}"
+   class="{% if request.resolver_match.app_name == 'calculations' %}active{% endif %}">
+  GGF
+</a>
   <a href="{% url 'purchases:list' %}"
     class="{% if request.resolver_match.app_name == 'purchases' %}active{% endif %}">
     Compras

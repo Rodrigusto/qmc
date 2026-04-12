@@ -5,7 +5,7 @@
 {% block content %}
 <div class="page-header">
   <h1>Histórico de cálculos</h1>
-  <a href="{% url 'calculations:new' %}" class="btn btn-primary">+ Novo cálculo</a>
+  <a href="{% url 'calculations:ggf' %}" class="btn btn-primary">+ Novo cálculo</a>
 </div>
 
 {% if calculations %}
@@ -47,7 +47,7 @@
 {% else %}
   <div class="card" style="text-align:center; padding:3rem; color:#888;">
     Nenhum cálculo realizado ainda.<br>
-    <a href="{% url 'calculations:new' %}" class="btn btn-primary" style="margin-top:1rem;">
+    <a href="{% url 'calculations:ggf' %}" class="btn btn-primary" style="margin-top:1rem;">
       Fazer primeiro cálculo
     </a>
   </div>

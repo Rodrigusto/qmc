@@ -82,3 +82,34 @@ class CostCalculation(BaseModel):
 
     def __str__(self):
         return f'{self.product.name} — R$ {self.total_cost}'
+
+
+class SalesForecast(BaseModel):
+    """
+    Previsão de vendas mensais por produto.
+    Base para o cálculo do GGF proporcional.
+    Apenas um registro ativo por produto — ao criar novo, desativa o anterior.
+    """
+    product              = models.ForeignKey(
+        Product,
+        on_delete=models.PROTECT,
+        related_name='forecasts',
+        verbose_name='Produto'
+    )
+    month                = models.PositiveIntegerField('Mês', choices=[
+        (i, str(i)) for i in range(1, 13)
+    ])
+    year                 = models.PositiveIntegerField('Ano')
+    expected_units       = models.PositiveIntegerField(
+        'Unidades previstas',
+        validators=[MinValueValidator(1)]
+    )
+
+    class Meta:
+        verbose_name        = 'Previsão de vendas'
+        verbose_name_plural = 'Previsões de vendas'
+        unique_together     = ('product', 'month', 'year')
+        ordering            = ['-year', '-month', 'product__name']
+
+    def __str__(self):
+        return f'{self.product.name} — {self.month:02d}/{self.year} — {self.expected_units} un.'
