@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% block title %}Nova venda{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Registrar venda</h1>
+  <a href="{% url 'sales:list' %}" class="btn btn-outline">← Voltar</a>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" name="date" value="{{ today }}" required>
+      </div>
+      <div class="form-group">
+        <label>Canal de venda</label>
+        <select name="channel" id="channel-select" required onchange="updateChannelInfo(this)">
+          <option value="">Selecione...</option>
+          {% for c in channels %}
+            <option value="{{ c.pk }}"
+              data-fee-type="{{ c.fee_type }}"
+              data-fee-value="{{ c.fee_value }}">
+              {{ c.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select name="status">
+          {% for val, label in status_choices %}
+            <option value="{{ val }}" {% if val == 'confirmed' %}selected{% endif %}>
+              {{ label }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-group">
+        <label>Cliente (opcional)</label>
+        <select name="customer">
+          <option value="">Balcão / anônimo</option>
+          {% for c in customers %}
+            <option value="{{ c.pk }}">{{ c.name }} {% if c.phone %}· {{ c.phone }}{% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Bairro (delivery)</label>
+        <select name="neighborhood" onchange="updateDeliveryFee(this)">
+          <option value="">Retirada / sem entrega</option>
+          {% for n in neighborhoods %}
+            <option value="{{ n.pk }}" data-fee="{{ n.delivery_fee }}">
+              {{ n.name }} — R$ {{ n.delivery_fee }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Itens da venda -->
+    <div style="font-weight:500; margin:1.25rem 0 .75rem;">Produtos</div>
+    <table id="items-table">
+      <thead>
+        <tr>
+          <th style="width:40%">Produto</th>
+          <th style="width:15%">Qtd</th>
+          <th style="width:20%">Preço unit. (R$)</th>
+          <th style="width:20%">Subtotal</th>
+          <th style="width:5%"></th>
+        </tr>
+      </thead>
+      <tbody id="items-body">
+        <tr class="item-row">
+          <td>
+            <select name="product_id[]" onchange="fillPrice(this)" required>
+              <option value="">Selecione...</option>
+              {% for p in products %}
+                <option value="{{ p.pk }}" data-price="{{ p.sale_price }}">
+                  {{ p.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </td>
+          <td><input type="number" name="quantity[]" value="1" min="1" oninput="calcRow(this)" required></td>
+          <td><input type="number" name="unit_price[]" min="0.01" step="0.01" placeholder="0,00" oninput="calcRow(this)" required></td>
+          <td class="row-subtotal" style="font-weight:500;">—</td>
+          <td><button type="button" onclick="removeRow(this)" style="background:none;border:none;cursor:pointer;color:#e24b4a;font-size:1.1rem;">✕</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button type="button" onclick="addRow()" class="btn btn-outline" style="margin:.75rem 0 1.5rem;">
+      + Adicionar produto
+    </button>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="form-group">
+        <label>Desconto (R$)</label>
+        <input type="number" name="discount" value="0" min="0" step="0.01" oninput="updateSummary()">
+      </div>
+      <div class="form-group">
+        <label>Observações</label>
+        <input type="text" name="note" placeholder="Ex: sem cebola">
+      </div>
+    </div>
+
+    <!-- Resumo financeiro -->
+    <div style="background:#f5f5f0; border-radius:8px; padding:1rem; margin-top:.5rem;">
+      <div class="cost-row">
+        <span>Subtotal produtos</span>
+        <span id="sum-subtotal" class="cost-value">R$ 0,00</span>
+      </div>
+      <div class="cost-row">
+        <span id="delivery-label">Taxa de entrega</span>
+        <span id="sum-delivery" class="cost-value">R$ 0,00</span>
+      </div>
+      <div class="cost-row">
+        <span id="channel-label">Taxa do canal</span>
+        <span id="sum-channel" class="cost-value">R$ 0,00</span>
+      </div>
+      <div class="cost-row">
+        <span>Desconto</span>
+        <span id="sum-discount" class="cost-value" style="color:#e24b4a;">- R$ 0,00</span>
+      </div>
+      <div class="cost-row total">
+        <span>Total ao cliente</span>
+        <span id="sum-total" class="cost-value" style="color:#f5a623;">R$ 0,00</span>
+      </div>
+    </div>
+
+    <div style="margin-top:1.25rem; text-align:right;">
+      <button type="submit" class="btn btn-primary">Confirmar venda</button>
+    </div>
+  </form>
+</div>
+
+<script>
+const productOptions = `{% for p in products %}<option value="{{ p.pk }}" data-price="{{ p.sale_price }}">{{ p.name }}</option>{% endfor %}`;
+let deliveryFee  = 0;
+let channelFeeType  = 'none';
+let channelFeeValue = 0;
+
+function fillPrice(sel) {
+  const opt   = sel.options[sel.selectedIndex];
+  const price = opt.dataset.price || '';
+  const row   = sel.closest('.item-row');
+  if (price) row.querySelector('[name="unit_price[]"]').value = parseFloat(price).toFixed(2);
+  calcRow(sel);
+}
+
+function calcRow(el) {
+  const row   = el.closest('.item-row');
+  const qty   = parseFloat(row.querySelector('[name="quantity[]"]').value) || 0;
+  const price = parseFloat(row.querySelector('[name="unit_price[]"]').value) || 0;
+  row.querySelector('.row-subtotal').textContent = 'R$ ' + (qty * price).toFixed(2);
+  updateSummary();
+}
+
+function updateSummary() {
+  let subtotal = 0;
+  document.querySelectorAll('.item-row').forEach(row => {
+    const qty   = parseFloat(row.querySelector('[name="quantity[]"]').value) || 0;
+    const price = parseFloat(row.querySelector('[name="unit_price[]"]').value) || 0;
+    subtotal   += qty * price;
+  });
+
+  let channelFee = 0;
+  if (channelFeeType === 'percent') channelFee = subtotal * channelFeeValue / 100;
+  else if (channelFeeType === 'fixed') channelFee = channelFeeValue;
+
+  const discount = parseFloat(document.querySelector('[name="discount"]').value) || 0;
+  const total    = subtotal + deliveryFee - discount;
+
+  document.getElementById('sum-subtotal').textContent  = 'R$ ' + subtotal.toFixed(2);
+  document.getElementById('sum-delivery').textContent  = 'R$ ' + deliveryFee.toFixed(2);
+  document.getElementById('sum-channel').textContent   = 'R$ ' + channelFee.toFixed(2);
+  document.getElementById('sum-discount').textContent  = '- R$ ' + discount.toFixed(2);
+  document.getElementById('sum-total').textContent     = 'R$ ' + total.toFixed(2);
+}
+
+function updateDeliveryFee(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  deliveryFee = parseFloat(opt.dataset.fee) || 0;
+  document.getElementById('delivery-label').textContent =
+    sel.value ? `Taxa entrega (${opt.text.split('—')[0].trim()})` : 'Taxa de entrega';
+  updateSummary();
+}
+
+function updateChannelInfo(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  channelFeeType  = opt.dataset.feeType  || 'none';
+  channelFeeValue = parseFloat(opt.dataset.feeValue) || 0;
+  const label = channelFeeType === 'percent'
+    ? `Taxa ${opt.text} (${channelFeeValue}%)`
+    : channelFeeType === 'fixed'
+    ? `Taxa ${opt.text} (R$ ${channelFeeValue.toFixed(2)})`
+    : 'Taxa do canal';
+  document.getElementById('channel-label').textContent = label;
+  updateSummary();
+}
+
+function addRow() {
+  const tbody = document.getElementById('items-body');
+  const tr    = document.createElement('tr');
+  tr.className = 'item-row';
+  tr.innerHTML = `
+    <td><select name="product_id[]" onchange="fillPrice(this)">
+      <option value="">Selecione...</option>${productOptions}
+    </select></td>
+    <td><input type="number" name="quantity[]" value="1" min="1" oninput="calcRow(this)"></td>
+    <td><input type="number" name="unit_price[]" min="0.01" step="0.01" placeholder="0,00" oninput="calcRow(this)"></td>
+    <td class="row-subtotal" style="font-weight:500;">—</td>
+    <td><button type="button" onclick="removeRow(this)" style="background:none;border:none;cursor:pointer;color:#e24b4a;font-size:1.1rem;">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function removeRow(btn) {
+  if (document.querySelectorAll('.item-row').length > 1) {
+    btn.closest('.item-row').remove();
+    updateSummary();
+  }
+}
+</script>
+{% endblock %}

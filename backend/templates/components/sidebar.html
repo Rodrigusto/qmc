@@ -1,0 +1,83 @@
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <a href="/" class="sidebar-brand">🍔 Hamburgueria</a>
+
+  <nav>
+    <div class="sidebar-section">Principal</div>
+
+    <a href="/" class="icon-link {% block nav_dashboard %}{% endblock %}">
+      <span class="icon">⊞</span> Dashboard
+    </a>
+
+    <!-- Vendas -->
+  <div class="has-sub">
+    <span style="display:flex;align-items:center;gap:.6rem;">
+      <span class="icon">🛒</span> Vendas
+    </span>
+    <span class="arrow">▸</span>
+  </div>
+  <div class="submenu">
+    <a href="{% url 'sales:list' %}"    class="{% block nav_sales_list %}{% endblock %}">Lista de vendas</a>
+    <a href="{% url 'sales:new' %}"     class="{% block nav_sales_new %}{% endblock %}">Nova venda</a>
+    <a href="{% url 'sales:summary' %}" class="{% block nav_sales_summary %}{% endblock %}">Realizado × Previsto</a>
+  </div>
+
+  <!-- Compras --> 
+  <div class="has-sub">
+    <span style="display:flex;align-items:center;gap:.6rem;">
+      <span class="icon">📦</span> Compras
+    </span>
+    <span class="arrow">▸</span>
+  </div>
+  <div class="submenu">
+    <a href="{% url 'purchases:list' %}"  class="{% block nav_purchases_list %}{% endblock %}">Lista de compras</a>
+    <a href="{% url 'purchases:new' %}"   class="{% block nav_purchases_new %}{% endblock %}">Nova compra</a>
+    <a href="{% url 'purchases:stock' %}" class="{% block nav_stock %}{% endblock %}">Estoque atual</a>
+  </div>
+
+    <div class="sidebar-section">Financeiro</div>
+
+    <a href="{% url 'calculations:ggf' %}"
+       class="{% block nav_ggf %}{% endblock %}">
+      <span class="icon">💰</span> GGF
+    </a>
+    <a href="{% url 'calculations:forecast_list' %}"
+       class="{% block nav_forecast %}{% endblock %}">
+      <span class="icon">📈</span> Previsão
+    </a>
+    <a href="{% url 'products:list' %}"
+       class="{% block nav_products %}{% endblock %}">
+      <span class="icon">🍔</span> Produtos
+    </a>
+
+    <div class="sidebar-section">Cadastros</div>
+
+    <a href="{% url 'sales:customers' %}"
+       class="{% block nav_customers %}{% endblock %}">
+      <span class="icon">👥</span> Clientes
+    </a>
+    <a href="{% url 'sales:neighborhoods' %}"
+       class="{% block nav_neighborhoods %}{% endblock %}">
+      <span class="icon">📍</span> Bairros
+    </a>
+    <a href="{% url 'sales:channels' %}"
+       class="{% block nav_channels %}{% endblock %}">
+      <span class="icon">📡</span> Canais de venda
+    </a>
+    <a href="{% url 'purchases:suppliers' %}"
+       class="{% block nav_suppliers %}{% endblock %}">
+      <span class="icon">🏢</span> Fornecedores
+    </a>
+    <a href="/admin/" >
+      <span class="icon">⚙</span> Admin
+    </a>
+  </nav>
+</aside>
+
+<!-- Topbar -->
+<div class="topbar">
+  <button class="hamburger" onclick="openSidebar()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+</div>

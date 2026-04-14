@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Vendas{% endblock %}
+{% block page_title %}Vendas{% endblock %}
+{% block nav_sales_open %}open{% endblock %}
+{% block nav_sales_sub %}open{% endblock %}
+{% block nav_sales_list %}active{% endblock %}
+
+
+
+{% block content %}
+<div class="page-header">
+  <h1>Vendas</h1>
+  <div style="display:flex; gap:.75rem;">
+    <a href="{% url 'sales:summary' %}" class="btn btn-outline">Realizado × Previsto</a>
+    <a href="{% url 'sales:new' %}" class="btn btn-primary">+ Nova venda</a>
+  </div>
+</div>
+
+{% if sales %}
+{% for sale in sales %}
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div>
+      <div class="card-title">
+        {{ sale.channel.name }}
+        {% if sale.customer %} · {{ sale.customer.name }}{% endif %}
+        {% if sale.neighborhood %} · {{ sale.neighborhood.name }}{% endif %}
+      </div>
+      <div class="card-sub">{{ sale.date|date:"d/m/Y" }}
+        {% if sale.note %} · {{ sale.note }}{% endif %}
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:1.1rem; font-weight:600; color:#f5a623;">
+        R$ {{ sale.total|floatformat:2 }}
+      </div>
+      {% if sale.status == 'confirmed' %}
+        <span class="badge badge-green">Confirmado</span>
+      {% elif sale.status == 'delivered' %}
+        <span class="badge badge-green">Entregue</span>
+      {% elif sale.status == 'pending' %}
+        <span class="badge badge-amber">Pendente</span>
+      {% else %}
+        <span class="badge badge-red">Cancelado</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <table style="margin-top:.75rem;">
+    <thead>
+      <tr>
+        <th>Produto</th>
+        <th>Qtd</th>
+        <th>Preço unit.</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in sale.items.all %}
+      <tr>
+        <td>{{ item.product.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>R$ {{ item.unit_price|floatformat:2 }}</td>
+        <td>R$ {{ item.subtotal|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if sale.delivery_fee or sale.channel_fee or sale.discount %}
+  <div style="margin-top:.75rem; padding-top:.75rem; border-top:1px solid #f0efe8;
+              font-size:.85rem; color:#666; display:flex; gap:1.5rem;">
+    {% if sale.delivery_fee %}
+      <span>Entrega: R$ {{ sale.delivery_fee|floatformat:2 }}</span>
+    {% endif %}
+    {% if sale.channel_fee %}
+      <span>Taxa {{ sale.channel.name }}: R$ {{ sale.channel_fee|floatformat:2 }}</span>
+    {% endif %}
+    {% if sale.discount %}
+      <span>Desconto: R$ {{ sale.discount|floatformat:2 }}</span>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+
+{% else %}
+<div class="card" style="text-align:center; padding:3rem; color:#888;">
+  Nenhuma venda registrada ainda.<br>
+  <a href="{% url 'sales:new' %}" class="btn btn-primary" style="margin-top:1rem;">
+    Registrar primeira venda
+  </a>
+</div>
+{% endif %}
+{% endblock %}

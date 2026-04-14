@@ -3,196 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Gestor de Custos{% endblock %} | Hamburgueria</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: system-ui, sans-serif;
-      background: #f5f5f0;
-      color: #1a1a18;
-      min-height: 100vh;
-    }
-
-    /* navbar */
-    nav {
-      background: #1a1a18;
-      padding: 0 2rem;
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-      height: 56px;
-    }
-    nav .brand {
-      color: #f5a623;
-      font-weight: 600;
-      font-size: 1rem;
-      text-decoration: none;
-      margin-right: auto;
-    }
-    nav a {
-      color: #ccc;
-      text-decoration: none;
-      font-size: 0.9rem;
-      padding: 4px 0;
-      border-bottom: 2px solid transparent;
-      transition: color .2s, border-color .2s;
-    }
-    nav a:hover, nav a.active {
-      color: #fff;
-      border-bottom-color: #f5a623;
-    }
-
-    /* layout */
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
-    }
-
-    /* page header */
-    .page-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-    }
-    .page-header h1 { font-size: 1.4rem; font-weight: 600; }
-
-    /* botões */
-    .btn {
-      display: inline-block;
-      padding: 8px 18px;
-      border-radius: 6px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      cursor: pointer;
-      text-decoration: none;
-      border: none;
-      transition: opacity .2s;
-    }
-    .btn:hover { opacity: .85; }
-    .btn-primary  { background: #f5a623; color: #1a1a18; }
-    .btn-outline  { background: transparent; border: 1px solid #ccc; color: #444; }
-    .btn-danger   { background: #e24b4a; color: #fff; }
-
-    /* cards */
-    .card {
-      background: #fff;
-      border-radius: 10px;
-      border: 1px solid #e8e8e4;
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .card-title { font-weight: 600; margin-bottom: .25rem; }
-    .card-sub   { font-size: .85rem; color: #666; }
-
-    /* tabela */
-    table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; padding: 10px 12px; font-size: .9rem; }
-    th { background: #f0efe8; font-weight: 500; font-size: .8rem; color: #555; }
-    tr + tr td { border-top: 1px solid #f0efe8; }
-
-    /* badges */
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-size: .75rem;
-      font-weight: 500;
-    }
-    .badge-green  { background: #eaf3de; color: #3b6d11; }
-    .badge-amber  { background: #faeeda; color: #854f0b; }
-    .badge-red    { background: #fcebeb; color: #a32d2d; }
-
-    /* mensagens */
-    .messages { margin-bottom: 1rem; }
-    .message {
-      padding: 10px 14px;
-      border-radius: 6px;
-      font-size: .9rem;
-      margin-bottom: .5rem;
-    }
-    .message.success { background: #eaf3de; color: #3b6d11; }
-    .message.error   { background: #fcebeb; color: #a32d2d; }
-
-    /* formulário */
-    .form-group { margin-bottom: 1.25rem; }
-    label { display: block; font-size: .85rem; font-weight: 500; margin-bottom: 4px; }
-    input, select, textarea {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: .9rem;
-      background: #fff;
-      transition: border-color .2s;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: #f5a623;
-    }
-
-    /* custo breakdown */
-    .cost-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #f0efe8;
-      font-size: .9rem;
-    }
-    .cost-row:last-child { border: none; }
-    .cost-row.total {
-      font-weight: 600;
-      font-size: 1rem;
-      color: #1a1a18;
-      padding-top: 12px;
-    }
-    .cost-value { font-variant-numeric: tabular-nums; }
-  </style>
+  <title>{% block title %}Gestor{% endblock %} | Hamburgueria</title>
+  {% load static %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
 </head>
 <body>
 
-<nav>
-  <a href="/" class="brand">🍔 Gestor de Custos</a>
-  <a href="{% url 'products:list' %}"
-     class="{% if request.resolver_match.app_name == 'products' %}active{% endif %}">
-    Produtos
-  </a>
-  <a href="{% url 'calculations:forecast_list' %}"
-   class="{% if request.resolver_match.app_name == 'calculations' %}active{% endif %}">
-  Previsão
-</a>
-<a href="{% url 'calculations:ggf' %}"
-   class="{% if request.resolver_match.app_name == 'calculations' %}active{% endif %}">
-  GGF
-</a>
-  <a href="{% url 'purchases:list' %}"
-    class="{% if request.resolver_match.app_name == 'purchases' %}active{% endif %}">
-    Compras
-  </a>
-  <a href="{% url 'purchases:stock' %}"
-    class="{% if request.resolver_match.app_name == 'purchases' %}active{% endif %}">
-    Estoque
-  </a>
-  <a href="{% url 'calculations:list' %}"
-     class="{% if request.resolver_match.app_name == 'calculations' %}active{% endif %}">
-    Cálculos
-  </a>
-  <a href="/admin/">Admin</a>
-</nav>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-<div class="container">
-  {% if messages %}
-    <div class="messages">
-      {% for msg in messages %}
-        <div class="message {{ msg.tags }}">{{ msg }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
+{% include 'components/sidebar.html' %}
 
-  {% block content %}{% endblock %}
-</div>
+<!-- Conteúdo -->
+<main class="main">
+  <div class="container">
+    {% if messages %}
+      <div class="messages">
+        {% for msg in messages %}
+          <div class="message {{ msg.tags }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+</main>
 
+<script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

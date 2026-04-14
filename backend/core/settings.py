@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'products',
     'calculations',
     'purchases',
+    'sales',
 ]
 
 # CRÍTICO: antes da primeira migration
@@ -86,6 +87,8 @@ TEMPLATES = [
         },
     },
 ]
+
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 WSGI_APPLICATION = 'core.wsgi.application'
 

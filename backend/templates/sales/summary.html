@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Realizado × Previsto{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Realizado × Previsto</h1>
+  <a href="{% url 'sales:list' %}" class="btn btn-outline">← Vendas</a>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+  <form method="get" style="display:flex; gap:1rem; align-items:flex-end;">
+    <div class="form-group" style="margin:0; min-width:160px;">
+      <label>Mês</label>
+      <select name="month">
+        {% for num, nome in months %}
+          <option value="{{ num }}" {% if num == month %}selected{% endif %}>{{ nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin:0; min-width:100px;">
+      <label>Ano</label>
+      <input type="number" name="year" value="{{ year }}" min="2024">
+    </div>
+    <button type="submit" class="btn btn-outline">Filtrar</button>
+  </form>
+</div>
+
+<!-- Resumo geral -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+  <div class="card" style="text-align:center;">
+    <div class="card-sub">Total de vendas</div>
+    <div style="font-size:1.4rem; font-weight:600; margin-top:.25rem;">
+      {{ data.total_sales }}
+    </div>
+  </div>
+  <div class="card" style="text-align:center; border:2px solid #f5a623;">
+    <div class="card-sub">Faturamento realizado</div>
+    <div style="font-size:1.4rem; font-weight:600; color:#f5a623; margin-top:.25rem;">
+      R$ {{ data.total_revenue|floatformat:2 }}
+    </div>
+  </div>
+</div>
+
+{% if data.products %}
+<div class="card">
+  <div class="card-title" style="margin-bottom:1rem;">Por produto</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Produto</th>
+        <th>Previsto</th>
+        <th>Realizado</th>
+        <th>Atingimento</th>
+        <th>Faturamento</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in data.products %}
+      <tr>
+        <td><strong>{{ item.product_name }}</strong></td>
+        <td>{{ item.previsto }} un.</td>
+        <td>{{ item.realizado }} un.</td>
+        <td>
+          {% if item.percentual >= 100 %}
+            <span class="badge badge-green">{{ item.percentual }}%</span>
+          {% elif item.percentual >= 70 %}
+            <span class="badge badge-amber">{{ item.percentual }}%</span>
+          {% else %}
+            <span class="badge badge-red">{{ item.percentual }}%</span>
+          {% endif %}
+        </td>
+        <td>R$ {{ item.total_revenue|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card" style="text-align:center; padding:2rem; color:#888;">
+  Nenhuma venda registrada neste período.
+</div>
+{% endif %}
+{% endblock %}

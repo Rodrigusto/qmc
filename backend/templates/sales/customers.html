@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Clientes{% endblock %}
+{% block page_title %}Clientes{% endblock %}
+{% block nav_customers %}active{% endblock %}
+
+{% block content %}
+<div class="page-header"><h1>Clientes</h1></div>
+
+<div style="display:grid; grid-template-columns:340px 1fr; gap:1.5rem; align-items:start;">
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1rem;">Novo cliente</div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create">
+      <div class="form-group">
+        <label>Nome *</label>
+        <input type="text" name="name" required placeholder="Nome do cliente">
+      </div>
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="text" name="phone" placeholder="(47) 99999-9999">
+      </div>
+      <div class="form-group">
+        <label>Observações</label>
+        <textarea name="note" rows="2" placeholder="Preferências, alergias..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Cadastrar</button>
+    </form>
+  </div>
+
+  <div class="card" style="padding:0; overflow:hidden;">
+    <table>
+      <thead>
+        <tr><th>Nome</th><th>Telefone</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td><strong>{{ c.name }}</strong>
+            {% if c.note %}<div class="card-sub">{{ c.note|truncatechars:40 }}</div>{% endif %}
+          </td>
+          <td>{{ c.phone|default:"—" }}</td>
+          <td>{% if c.is_active %}<span class="badge badge-green">Ativo</span>
+              {% else %}<span class="badge badge-red">Inativo</span>{% endif %}</td>
+          <td>
+            <form method="post" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="toggle">
+              <input type="hidden" name="pk" value="{{ c.pk }}">
+              <button type="submit" class="btn btn-outline btn-sm">
+                {% if c.is_active %}Desativar{% else %}Ativar{% endif %}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center; color:#888; padding:2rem;">
+          Nenhum cliente cadastrado ainda.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

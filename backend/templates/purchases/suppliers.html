@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Fornecedores{% endblock %}
+{% block page_title %}Fornecedores{% endblock %}
+{% block nav_suppliers %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Fornecedores</h1>
+</div>
+
+<div style="display:grid; grid-template-columns:340px 1fr; gap:1.5rem; align-items:start;">
+
+  <!-- Formulário -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1rem;">Novo fornecedor</div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create">
+      <div class="form-group">
+        <label>Nome *</label>
+        <input type="text" name="name" required placeholder="Ex: Distribuidora São João">
+      </div>
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="text" name="phone" placeholder="(47) 99999-9999">
+      </div>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" name="email" placeholder="contato@fornecedor.com">
+      </div>
+      <div class="form-group">
+        <label>Observações</label>
+        <textarea name="note" rows="2" placeholder="Dias de entrega, contato preferencial..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Cadastrar</button>
+    </form>
+  </div>
+
+  <!-- Lista -->
+  <div class="card" style="padding:0; overflow:hidden;">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Telefone</th>
+          <th>E-mail</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in suppliers %}
+        <tr>
+          <td><strong>{{ s.name }}</strong>
+            {% if s.note %}
+              <div class="card-sub">{{ s.note|truncatechars:40 }}</div>
+            {% endif %}
+          </td>
+          <td>{{ s.phone|default:"—" }}</td>
+          <td>{{ s.email|default:"—" }}</td>
+          <td>
+            {% if s.is_active %}
+              <span class="badge badge-green">Ativo</span>
+            {% else %}
+              <span class="badge badge-red">Inativo</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="post" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="toggle">
+              <input type="hidden" name="pk" value="{{ s.pk }}">
+              <button type="submit" class="btn btn-outline btn-sm">
+                {% if s.is_active %}Desativar{% else %}Ativar{% endif %}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center; color:#888; padding:2rem;">
+          Nenhum fornecedor cadastrado ainda.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

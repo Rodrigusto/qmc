@@ -43,6 +43,12 @@ class RecipeItem(BaseModel):
         decimal_places=3,
         validators=[MinValueValidator(0.001)]
     )
+    sale_price = models.DecimalField(
+        'Preço de venda (R$)',
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
 
     class Meta:
         verbose_name = 'Item da receita'

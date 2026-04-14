@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('products.urls')),
     path('', include('calculations.urls')),
     path('', include('purchases.urls')),
+    path('', include('sales.urls')),
 
     # rotas API — JSON para o Flet
     path('api/', include('api.urls')),
