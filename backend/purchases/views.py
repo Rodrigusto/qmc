@@ -1,94 +1,125 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import ListView, View
 from django.contrib import messages
-from .models import Purchase, Stock, Supplier
-from .services import create_purchase, cancel_purchase
-from ingredients.models import Ingredient
+from django.shortcuts import redirect, get_object_or_404, render
 import datetime
 
+from .models import Purchase, Stock, Supplier
+from .forms import PurchaseForm, PurchaseItemFormSet
+from .services import create_purchase, cancel_purchase
+# from ingredients.models import Ingredient
+from core.mixins import LoginRequiredMixin
 
-def purchase_list(request):
-    purchases = Purchase.objects.filter(is_active=True).select_related(
-        'supplier'
-    ).prefetch_related('items__ingredient')
-    return render(request, 'purchases/list.html', {'purchases': purchases})
+
+class PurchaseListView(LoginRequiredMixin, ListView):
+    model = Purchase
+    template_name = "purchases/list.html"
+    context_object_name = "purchases"
+
+    def get_queryset(self):
+        return (
+            Purchase.objects.filter(is_active=True)
+            .select_related("supplier")
+            .prefetch_related("items__ingredient")
+        )
 
 
-def purchase_new(request):
-    suppliers   = Supplier.objects.filter(is_active=True)
-    ingredients = Ingredient.objects.filter(is_active=True).order_by('name')
+class PurchaseCreateView(LoginRequiredMixin, View):
+    template_name = "purchases/new.html"
 
-    if request.method == 'POST':
-        ingredient_ids = request.POST.getlist('ingredient[]')
-        quantities     = request.POST.getlist('quantity[]')
-        total_prices   = request.POST.getlist('total_price[]')
+    def get_context(self, form=None, formset=None):
+        return {
+            "form": form or PurchaseForm(initial={"date": datetime.date.today()}),
+            "formset": formset or PurchaseItemFormSet(prefix="items"),
+        }
 
+    def get(self, request):
+        return render(request, self.template_name, self.get_context())
+
+    def post(self, request):
+        form = PurchaseForm(request.POST)
+        formset = PurchaseItemFormSet(request.POST, prefix="items")
+
+        if form.is_valid() and formset.is_valid():
+            return self._process(request, form, formset)
+
+        messages.error(request, "Corrija os erros abaixo.")
+        return render(request, self.template_name, self.get_context(form, formset))
+
+    def _process(self, request, form, formset):
         items = [
-            {'ingredient_id': i, 'quantity': q, 'total_price': p}
-            for i, q, p in zip(ingredient_ids, quantities, total_prices)
-            if i and q and p
+            {
+                "ingredient_id": f.cleaned_data["ingredient"].pk,
+                "quantity": f.cleaned_data["quantity"],
+                "total_price": f.cleaned_data["total_price"],
+            }
+            for f in formset
+            if f.cleaned_data and not f.cleaned_data.get("DELETE")
         ]
 
         if not items:
-            messages.error(request, 'Adicione ao menos um item à compra.')
-        else:
-            try:
-                create_purchase(
-                    supplier_id=request.POST.get('supplier'),
-                    date=request.POST.get('date'),
-                    note=request.POST.get('note', ''),
-                    items=items,
-                )
-                messages.success(request, 'Compra registrada e estoque atualizado!')
-                return redirect('purchases:list')
-            except Exception as e:
-                messages.error(request, f'Erro ao registrar compra: {e}')
+            messages.error(request, "Adicione ao menos um item.")
+            return render(request, self.template_name, self.get_context(form, formset))
 
-    return render(request, 'purchases/new.html', {
-        'suppliers':   suppliers,
-        'ingredients': ingredients,
-        'today':       datetime.date.today().isoformat(),
-    })
+        try:
+            create_purchase(
+                supplier_id=form.cleaned_data["supplier"].pk,
+                date=form.cleaned_data["date"],
+                note=form.cleaned_data.get("note", ""),
+                items=items,
+            )
+            messages.success(request, "Compra registrada e estoque atualizado!")
+            return redirect("purchases:list")
+        except Exception as e:
+            messages.error(request, f"Erro ao registrar compra: {e}")
+            return render(request, self.template_name, self.get_context(form, formset))
 
 
-def purchase_cancel(request, pk):
-    purchase = get_object_or_404(Purchase, pk=pk, is_active=True)
-    if request.method == 'POST':
+class PurchaseCancelView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        purchase = get_object_or_404(Purchase, pk=pk, is_active=True)
         try:
             cancel_purchase(purchase)
-            messages.success(request, 'Compra cancelada e estoque estornado.')
+            messages.success(request, "Compra cancelada e estoque estornado.")
         except Exception as e:
-            messages.error(request, f'Erro ao cancelar: {e}')
-    return redirect('purchases:list')
+            messages.error(request, f"Erro ao cancelar: {e}")
+        return redirect("purchases:list")
 
 
-def stock_list(request):
-    stocks = Stock.objects.select_related('ingredient').order_by('ingredient__name')
-    return render(request, 'purchases/stock.html', {'stocks': stocks})
+class StockListView(LoginRequiredMixin, ListView):
+    model = Stock
+    template_name = "purchases/stock.html"
+    context_object_name = "stocks"
+
+    def get_queryset(self):
+        return Stock.objects.select_related("ingredient").order_by("ingredient__name")
 
 
-def supplier_list(request):
-    suppliers = Supplier.objects.all()
+class SupplierListView(LoginRequiredMixin, View):
+    template_name = "purchases/suppliers.html"
 
-    if request.method == 'POST':
-        action = request.POST.get('action')
+    def get(self, request):
+        return render(
+            request, self.template_name, {"suppliers": Supplier.objects.all()}
+        )
 
-        if action == 'create':
-            Supplier.objects.create(
-                name=request.POST.get('name'),
-                phone=request.POST.get('phone', ''),
-                email=request.POST.get('email', ''),
-                note=request.POST.get('note', ''),
-            )
-            messages.success(request, 'Fornecedor cadastrado!')
-
-        elif action == 'toggle':
-            pk  = request.POST.get('pk')
-            sup = get_object_or_404(Supplier, pk=pk)
-            sup.is_active = not sup.is_active
-            sup.save()
-            status = 'ativado' if sup.is_active else 'desativado'
-            messages.success(request, f'Fornecedor {status}.')
-
-        return redirect('purchases:suppliers')
-
-    return render(request, 'purchases/suppliers.html', {'suppliers': suppliers})
+    def post(self, request):
+        action = request.POST.get("action")
+        try:
+            if action == "create":
+                Supplier.objects.create(
+                    name=request.POST["name"],
+                    phone=request.POST.get("phone", ""),
+                    email=request.POST.get("email", ""),
+                    note=request.POST.get("note", ""),
+                )
+                messages.success(request, "Fornecedor cadastrado!")
+            elif action == "toggle":
+                s = get_object_or_404(Supplier, pk=request.POST["pk"])
+                s.is_active = not s.is_active
+                s.save()
+                messages.success(
+                    request, f'Fornecedor {"ativado" if s.is_active else "desativado"}.'
+                )
+        except Exception as e:
+            messages.error(request, f"Erro: {e}")
+        return redirect("purchases:suppliers")

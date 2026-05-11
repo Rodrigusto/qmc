@@ -8,25 +8,53 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Ingredient',
+            name="Ingredient",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('name', models.CharField(max_length=100, verbose_name='Nome')),
-                ('unit', models.CharField(choices=[('g', 'Grama'), ('kg', 'Quilograma'), ('un', 'Unidade'), ('l', 'Litro'), ('ml', 'Mililitro')], default='g', max_length=5, verbose_name='Unidade')),
-                ('cost_per_unit', models.DecimalField(decimal_places=4, max_digits=10, verbose_name='Custo por unidade')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("name", models.CharField(max_length=100, verbose_name="Nome")),
+                (
+                    "unit",
+                    models.CharField(
+                        choices=[
+                            ("g", "Grama"),
+                            ("kg", "Quilograma"),
+                            ("un", "Unidade"),
+                            ("l", "Litro"),
+                            ("ml", "Mililitro"),
+                        ],
+                        default="g",
+                        max_length=5,
+                        verbose_name="Unidade",
+                    ),
+                ),
+                (
+                    "cost_per_unit",
+                    models.DecimalField(
+                        decimal_places=4,
+                        max_digits=10,
+                        verbose_name="Custo por unidade",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Ingrediente',
-                'verbose_name_plural': 'Ingredientes',
-                'ordering': ['name'],
+                "verbose_name": "Ingrediente",
+                "verbose_name_plural": "Ingredientes",
+                "ordering": ["name"],
             },
         ),
     ]

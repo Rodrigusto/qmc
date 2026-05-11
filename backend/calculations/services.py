@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.db.models import Sum
 from .models import FixedCost, Expense, SalesForecast, CostCalculation
-import datetime
+from core.utils import to_decimal
 
 
 def calculate_ggf(month: int, year: int) -> dict:
@@ -17,76 +17,79 @@ def calculate_ggf(month: int, year: int) -> dict:
 
     # 1. GGF total do mês
     total_fixed = FixedCost.objects.filter(is_active=True).aggregate(
-        total=Sum('monthly_amount')
-    )['total'] or Decimal('0')
+        total=Sum("monthly_amount")
+    )["total"] or Decimal("0")
 
     total_expenses = Expense.objects.filter(
-        date__month=month,
-        date__year=year
-    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+        date__month=month, date__year=year
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
 
-    ggf_total = Decimal(str(total_fixed)) + Decimal(str(total_expenses))
+    ggf_total = to_decimal(total_fixed) + to_decimal(total_expenses)
 
     # 2. Previsões do mês
-    forecasts = SalesForecast.objects.filter(
-        month=month, year=year
-    ).select_related('product').prefetch_related(
-        'product__recipe_items__ingredient'
+    forecasts = (
+        SalesForecast.objects.filter(month=month, year=year)
+        .select_related("product")
+        .prefetch_related("product__recipe_items__ingredient")
     )
 
     if not forecasts.exists():
         return {
-            'ggf_total':    ggf_total,
-            'total_fixed':  total_fixed,
-            'total_expenses': total_expenses,
-            'products':     [],
-            'error': 'Nenhuma previsão de vendas cadastrada para este período.'
+            "ggf_total": ggf_total,
+            "total_fixed": total_fixed,
+            "total_expenses": total_expenses,
+            "products": [],
+            "error": "Nenhuma previsão de vendas cadastrada para este período.",
         }
 
     # 3. Faturamento previsto total (base do rateio proporcional)
     product_data = []
-    faturamento_total = Decimal('0')
+    faturamento_total = Decimal("0")
 
     for forecast in forecasts:
-        ingredient_cost  = Decimal(str(forecast.product.ingredient_cost))
-        units            = Decimal(str(forecast.expected_units))
-        faturamento      = ingredient_cost * units
+        ingredient_cost = to_decimal(forecast.product.ingredient_cost)
+        units = to_decimal(forecast.expected_units)
+        faturamento = ingredient_cost * units
         faturamento_total += faturamento
-        product_data.append({
-            'forecast':        forecast,
-            'ingredient_cost': ingredient_cost,
-            'units':           units,
-            'faturamento':     faturamento,
-        })
+        product_data.append(
+            {
+                "forecast": forecast,
+                "ingredient_cost": ingredient_cost,
+                "units": units,
+                "faturamento": faturamento,
+            }
+        )
 
     # 4. GGF por produto
     results = []
     for item in product_data:
         if faturamento_total > 0:
-            proporcao = item['faturamento'] / faturamento_total
+            proporcao = item["faturamento"] / faturamento_total
         else:
-            proporcao = Decimal('1') / Decimal(str(len(product_data)))
+            proporcao = Decimal("1") / to_decimal(len(product_data))
 
-        ggf_produto     = (ggf_total * proporcao) / item['units']
-        custo_total     = item['ingredient_cost'] + ggf_produto
+        ggf_produto = (ggf_total * proporcao) / item["units"]
+        custo_total = item["ingredient_cost"] + ggf_produto
 
-        results.append({
-            'product':         item['forecast'].product,
-            'expected_units':  item['units'],
-            'ingredient_cost': item['ingredient_cost'],
-            'faturamento':     item['faturamento'],
-            'proporcao':       proporcao * 100,   # em %
-            'ggf_per_unit':    ggf_produto,
-            'total_cost':      custo_total,
-        })
+        results.append(
+            {
+                "product": item["forecast"].product,
+                "expected_units": item["units"],
+                "ingredient_cost": item["ingredient_cost"],
+                "faturamento": item["faturamento"],
+                "proporcao": proporcao * 100,  # em %
+                "ggf_per_unit": ggf_produto,
+                "total_cost": custo_total,
+            }
+        )
 
     return {
-        'ggf_total':        ggf_total,
-        'total_fixed':      total_fixed,
-        'total_expenses':   total_expenses,
-        'faturamento_total': faturamento_total,
-        'products':         results,
-        'error':            None,
+        "ggf_total": ggf_total,
+        "total_fixed": total_fixed,
+        "total_expenses": total_expenses,
+        "faturamento_total": faturamento_total,
+        "products": results,
+        "error": None,
     }
 
 
@@ -96,25 +99,25 @@ def save_calculations(month: int, year: int) -> list:
     Substitui cálculos anteriores do mesmo mês/ano.
     """
     data = calculate_ggf(month, year)
-    if data['error']:
+    if data["error"]:
         return []
 
     saved = []
-    for item in data['products']:
+    for item in data["products"]:
         # remove cálculo anterior do mesmo produto/mês/ano se existir
         CostCalculation.objects.filter(
-            product=item['product'],
+            product=item["product"],
             created_at__month=month,
             created_at__year=year,
         ).delete()
 
         calc = CostCalculation.objects.create(
-            product=item['product'],
-            expected_monthly_sales=int(item['expected_units']),
-            ingredient_cost=item['ingredient_cost'],
-            fixed_cost_share=item['ggf_per_unit'],
-            expense_share=Decimal('0'),   # já embutido no GGF
-            total_cost=item['total_cost'],
+            product=item["product"],
+            expected_monthly_sales=int(item["expected_units"]),
+            ingredient_cost=item["ingredient_cost"],
+            fixed_cost_share=item["ggf_per_unit"],
+            expense_share=Decimal("0"),  # já embutido no GGF
+            total_cost=item["total_cost"],
         )
         saved.append(calc)
 

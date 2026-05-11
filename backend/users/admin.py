@@ -9,4 +9,5 @@ class UserAdmin(BaseUserAdmin):
     Herda tudo do UserAdmin padrão do Django.
     Pronto para customizar quando precisar.
     """
+
     pass

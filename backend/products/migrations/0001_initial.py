@@ -11,41 +11,79 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('ingredients', '0001_initial'),
+        ("ingredients", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Product',
+            name="Product",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('name', models.CharField(max_length=100, verbose_name='Nome')),
-                ('description', models.TextField(blank=True, verbose_name='Descrição')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("name", models.CharField(max_length=100, verbose_name="Nome")),
+                ("description", models.TextField(blank=True, verbose_name="Descrição")),
             ],
             options={
-                'verbose_name': 'Produto',
-                'verbose_name_plural': 'Produtos',
-                'ordering': ['name'],
+                "verbose_name": "Produto",
+                "verbose_name_plural": "Produtos",
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='RecipeItem',
+            name="RecipeItem",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('quantity', models.DecimalField(decimal_places=3, max_digits=10, validators=[django.core.validators.MinValueValidator(0.001)], verbose_name='Quantidade')),
-                ('ingredient', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='recipe_items', to='ingredients.ingredient')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='recipe_items', to='products.product')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "quantity",
+                    models.DecimalField(
+                        decimal_places=3,
+                        max_digits=10,
+                        validators=[django.core.validators.MinValueValidator(0.001)],
+                        verbose_name="Quantidade",
+                    ),
+                ),
+                (
+                    "ingredient",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="recipe_items",
+                        to="ingredients.ingredient",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="recipe_items",
+                        to="products.product",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Item da receita',
-                'verbose_name_plural': 'Itens da receita',
-                'unique_together': {('product', 'ingredient')},
+                "verbose_name": "Item da receita",
+                "verbose_name_plural": "Itens da receita",
+                "unique_together": {("product", "ingredient")},
             },
         ),
     ]

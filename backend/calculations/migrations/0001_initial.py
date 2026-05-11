@@ -11,62 +11,130 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('products', '0001_initial'),
+        ("products", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Expense',
+            name="Expense",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('name', models.CharField(max_length=100, verbose_name='Nome')),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Valor (R$)')),
-                ('date', models.DateField(verbose_name='Data')),
-                ('note', models.TextField(blank=True, verbose_name='Observação')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("name", models.CharField(max_length=100, verbose_name="Nome")),
+                (
+                    "amount",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=10, verbose_name="Valor (R$)"
+                    ),
+                ),
+                ("date", models.DateField(verbose_name="Data")),
+                ("note", models.TextField(blank=True, verbose_name="Observação")),
             ],
             options={
-                'verbose_name': 'Despesa',
-                'verbose_name_plural': 'Despesas',
-                'ordering': ['-date'],
+                "verbose_name": "Despesa",
+                "verbose_name_plural": "Despesas",
+                "ordering": ["-date"],
             },
         ),
         migrations.CreateModel(
-            name='FixedCost',
+            name="FixedCost",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('name', models.CharField(max_length=100, verbose_name='Nome')),
-                ('category', models.CharField(choices=[('rent', 'Aluguel'), ('salary', 'Salários'), ('utility', 'Utilidades (água/luz)'), ('other', 'Outros')], default='other', max_length=20, verbose_name='Categoria')),
-                ('monthly_amount', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Valor mensal (R$)')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("name", models.CharField(max_length=100, verbose_name="Nome")),
+                (
+                    "category",
+                    models.CharField(
+                        choices=[
+                            ("rent", "Aluguel"),
+                            ("salary", "Salários"),
+                            ("utility", "Utilidades (água/luz)"),
+                            ("other", "Outros"),
+                        ],
+                        default="other",
+                        max_length=20,
+                        verbose_name="Categoria",
+                    ),
+                ),
+                (
+                    "monthly_amount",
+                    models.DecimalField(
+                        decimal_places=2,
+                        max_digits=10,
+                        verbose_name="Valor mensal (R$)",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Custo fixo',
-                'verbose_name_plural': 'Custos fixos',
+                "verbose_name": "Custo fixo",
+                "verbose_name_plural": "Custos fixos",
             },
         ),
         migrations.CreateModel(
-            name='CostCalculation',
+            name="CostCalculation",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('expected_monthly_sales', models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(1)], verbose_name='Vendas mensais esperadas')),
-                ('ingredient_cost', models.DecimalField(decimal_places=4, max_digits=10)),
-                ('fixed_cost_share', models.DecimalField(decimal_places=4, max_digits=10)),
-                ('expense_share', models.DecimalField(decimal_places=4, max_digits=10)),
-                ('total_cost', models.DecimalField(decimal_places=4, max_digits=10)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='calculations', to='products.product')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "expected_monthly_sales",
+                    models.PositiveIntegerField(
+                        validators=[django.core.validators.MinValueValidator(1)],
+                        verbose_name="Vendas mensais esperadas",
+                    ),
+                ),
+                (
+                    "ingredient_cost",
+                    models.DecimalField(decimal_places=4, max_digits=10),
+                ),
+                (
+                    "fixed_cost_share",
+                    models.DecimalField(decimal_places=4, max_digits=10),
+                ),
+                ("expense_share", models.DecimalField(decimal_places=4, max_digits=10)),
+                ("total_cost", models.DecimalField(decimal_places=4, max_digits=10)),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="calculations",
+                        to="products.product",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Cálculo de custo',
-                'verbose_name_plural': 'Cálculos de custo',
-                'ordering': ['-created_at'],
+                "verbose_name": "Cálculo de custo",
+                "verbose_name_plural": "Cálculos de custo",
+                "ordering": ["-created_at"],
             },
         ),
     ]
