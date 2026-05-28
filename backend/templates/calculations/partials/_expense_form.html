@@ -1,0 +1,16 @@
+{% load crispy_forms_tags %}
+<div id="expense-form">
+  <form hx-post="{% url 'calculations:expenses' %}"
+        hx-target="#expense-table"
+        hx-swap="outerHTML">
+    {% csrf_token %}
+    <input type="hidden" name="pk" id="expense-pk" value="">
+    {% crispy form %}
+    <div style="display:flex; gap:.75rem; margin-top:.75rem;">
+      <button type="submit" class="btn btn-primary">Salvar</button>
+      <button type="button" class="btn btn-outline" onclick="resetExpenseForm()">
+        Limpar
+      </button>
+    </div>
+  </form>
+</div>

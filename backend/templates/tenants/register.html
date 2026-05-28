@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar conta | Gestor de Custos</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <style>
+    body {
+      min-height: 100vh; display: flex;
+      align-items: center; justify-content: center;
+      background: #1a1a18; padding: 2rem;
+    }
+    .register-box {
+      background: #fff; border-radius: 12px;
+      padding: 2.5rem 2rem; width: 100%; max-width: 480px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.3);
+    }
+    .register-brand { text-align: center; margin-bottom: 2rem; }
+    .register-brand .emoji { font-size: 2.5rem; display: block; margin-bottom: .5rem; }
+    .register-brand h1 { font-size: 1.2rem; font-weight: 700; }
+    .register-brand p  { font-size: .85rem; color: #888; margin-top: .25rem; }
+    .subdomain-preview {
+      font-size: .8rem; color: #888;
+      margin-top: .25rem; min-height: 1.2rem;
+    }
+    .subdomain-preview span { color: #f5a623; font-weight: 600; }
+    .divider {
+      border: none; border-top: 1px solid #f0efe8;
+      margin: 1.25rem 0;
+    }
+    .error-msg {
+      background: #fcebeb; color: #a32d2d;
+      padding: 10px 14px; border-radius: 6px;
+      font-size: .875rem; margin-bottom: 1rem;
+    }
+    .login-link {
+      text-align: center; margin-top: 1.25rem;
+      font-size: .875rem; color: #888;
+    }
+    .login-link a { color: #f5a623; text-decoration: none; font-weight: 500; }
+  </style>
+</head>
+<body>
+<div class="register-box">
+  <div class="register-brand">
+    <span class="emoji">🍔</span>
+    <h1>Criar sua conta</h1>
+    <p>Configure seu negócio em menos de 2 minutos</p>
+  </div>
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="error-msg">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div style="font-size:.8rem; font-weight:600; color:#888;
+                text-transform:uppercase; letter-spacing:.06em;
+                margin-bottom:.75rem;">
+      Sobre seu negócio
+    </div>
+
+    <div class="form-group">
+      <label>Nome do negócio *</label>
+      <input type="text" name="business_name"
+             placeholder="Ex: Burger do João"
+             value="{{ post.business_name|default:'' }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>Subdomínio *</label>
+      <input type="text" name="subdomain" id="subdomain"
+             placeholder="Ex: burgerdojoao"
+             value="{{ post.subdomain|default:'' }}"
+             oninput="updatePreview(this.value)"
+             pattern="[a-z0-9-]+"
+             title="Só letras minúsculas, números e hífens"
+             required>
+      <div class="subdomain-preview" id="subdomain-preview">
+        Seu endereço: <span id="preview-url">...</span>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div style="font-size:.8rem; font-weight:600; color:#888;
+                text-transform:uppercase; letter-spacing:.06em;
+                margin-bottom:.75rem;">
+      Seu acesso
+    </div>
+
+    <div class="form-group">
+      <label>Seu nome</label>
+      <input type="text" name="first_name"
+             placeholder="Como prefere ser chamado"
+             value="{{ post.first_name|default:'' }}">
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label>Usuário *</label>
+        <input type="text" name="username"
+               placeholder="sem espaços"
+               value="{{ post.username|default:'' }}" required>
+      </div>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" name="email"
+               placeholder="seu@email.com"
+               value="{{ post.email|default:'' }}">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label>Senha *</label>
+        <input type="password" name="password1"
+               placeholder="mín. 6 caracteres" required>
+      </div>
+      <div class="form-group">
+        <label>Confirme *</label>
+        <input type="password" name="password2"
+               placeholder="repita a senha" required>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary"
+            style="width:100%; justify-content:center; padding:10px; margin-top:.5rem;">
+      Criar minha conta
+    </button>
+  </form>
+
+  <div class="login-link">
+    Já tem conta?
+    <a href="/login/">Entrar</a>
+  </div>
+</div>
+
+<script>
+function updatePreview(val) {
+  const clean   = val.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  const preview = document.getElementById('preview-url');
+  const host    = window.location.hostname.replace(/^[^.]+\./, '') || 'seuapp.com';
+  preview.textContent = clean ? `${clean}.${host}` : '...';
+}
+// inicializa se vier valor do POST
+const sub = document.getElementById('subdomain');
+if (sub.value) updatePreview(sub.value);
+</script>
+</body>
+</html>

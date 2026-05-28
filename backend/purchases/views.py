@@ -6,11 +6,12 @@ import datetime
 from .models import Purchase, Stock, Supplier
 from .forms import PurchaseForm, PurchaseItemFormSet
 from .services import create_purchase, cancel_purchase
+
 # from ingredients.models import Ingredient
-from core.mixins import LoginRequiredMixin
+from core.mixins import AuthMixin
 
 
-class PurchaseListView(LoginRequiredMixin, ListView):
+class PurchaseListView(AuthMixin, ListView):
     model = Purchase
     template_name = "purchases/list.html"
     context_object_name = "purchases"
@@ -23,7 +24,7 @@ class PurchaseListView(LoginRequiredMixin, ListView):
         )
 
 
-class PurchaseCreateView(LoginRequiredMixin, View):
+class PurchaseCreateView(AuthMixin, View):
     template_name = "purchases/new.html"
 
     def get_context(self, form=None, formset=None):
@@ -74,7 +75,7 @@ class PurchaseCreateView(LoginRequiredMixin, View):
             return render(request, self.template_name, self.get_context(form, formset))
 
 
-class PurchaseCancelView(LoginRequiredMixin, View):
+class PurchaseCancelView(AuthMixin, View):
     def post(self, request, pk):
         purchase = get_object_or_404(Purchase, pk=pk, is_active=True)
         try:
@@ -85,7 +86,7 @@ class PurchaseCancelView(LoginRequiredMixin, View):
         return redirect("purchases:list")
 
 
-class StockListView(LoginRequiredMixin, ListView):
+class StockListView(AuthMixin, ListView):
     model = Stock
     template_name = "purchases/stock.html"
     context_object_name = "stocks"
@@ -94,7 +95,7 @@ class StockListView(LoginRequiredMixin, ListView):
         return Stock.objects.select_related("ingredient").order_by("ingredient__name")
 
 
-class SupplierListView(LoginRequiredMixin, View):
+class SupplierListView(AuthMixin, View):
     template_name = "purchases/suppliers.html"
 
     def get(self, request):

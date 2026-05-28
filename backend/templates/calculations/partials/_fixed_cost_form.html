@@ -1,0 +1,16 @@
+{% load crispy_forms_tags %}
+<div id="fixed-cost-form">
+  <form hx-post="{% url 'calculations:fixed_costs' %}"
+        hx-target="#fixed-cost-table"
+        hx-swap="outerHTML">
+    {% csrf_token %}
+    <input type="hidden" name="pk" id="edit-pk" value="">
+    {% crispy form %}
+    <div style="display:flex; gap:.75rem; margin-top:.75rem;">
+      <button type="submit" class="btn btn-primary">Salvar</button>
+      <button type="button" class="btn btn-outline" onclick="resetFixedCostForm()">
+        Limpar
+      </button>
+    </div>
+  </form>
+</div>

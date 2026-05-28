@@ -6,7 +6,7 @@
 {% block content %}
 <div class="page-header">
   <h1>Produtos</h1>
-  <a href="/admin/products/product/add/" class="btn btn-primary">+ Novo produto</a>
+  <a href="{% url 'products:create' %}" class="btn btn-primary">+ Novo produto</a>
 </div>
 
 {% if products %}
@@ -21,42 +21,47 @@
       </div>
       <div style="text-align:right;">
         <div style="font-size:1.1rem; font-weight:600; color:#f5a623;">
-          R$ {{ product.ingredient_cost|floatformat:2 }}
+          Custo: R$ {{ product.ingredient_cost|floatformat:2 }}
         </div>
-        <div class="card-sub">custo ingredientes</div>
+        {% if product.sale_price %}
+          <div class="card-sub">Venda: R$ {{ product.sale_price|floatformat:2 }}</div>
+        {% endif %}
       </div>
     </div>
 
     {% if product.recipe_items.all %}
-    <div style="margin-top:1rem;">
-      <table>
-        <thead>
-          <tr>
-            <th>Ingrediente</th>
-            <th>Quantidade</th>
-            <th>Custo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in product.recipe_items.all %}
-          <tr>
-            <td>{{ item.ingredient.name }}</td>
-            <td>{{ item.quantity }} {{ item.ingredient.unit }}</td>
-            <td>R$ {{ item.total_cost|floatformat:4 }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <table style="margin-top:1rem;">
+      <thead>
+        <tr>
+          <th>Ingrediente</th>
+          <th>Quantidade</th>
+          <th>Unidade</th>
+          <th>Custo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in product.recipe_items.all %}
+        <tr>
+          <td>{{ item.ingredient.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.ingredient.get_unit_display }}</td>
+          <td>R$ {{ item.total_cost|floatformat:4 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
     {% endif %}
 
     <div style="margin-top:1rem; display:flex; gap:.75rem;">
-      <a href="{% url 'products:detail' product.pk %}" class="btn btn-outline">
-        Ver detalhes
+      <a href="{% url 'products:edit' product.pk %}" class="btn btn-outline btn-sm">
+        ✏ Editar receita
       </a>
-      <a href="{% url 'calculations:ggf' %}" class="btn btn-primary">
-      Calcular custo
-      </a>
+      <form method="post" action="{% url 'products:toggle' product.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline btn-sm">
+          {% if product.is_active %}Desativar{% else %}Ativar{% endif %}
+        </button>
+      </form>
     </div>
   </div>
   {% endfor %}
@@ -64,8 +69,8 @@
 {% else %}
   <div class="card" style="text-align:center; padding:3rem; color:#888;">
     Nenhum produto cadastrado ainda.<br>
-    <a href="/admin/products/product/add/" class="btn btn-primary" style="margin-top:1rem;">
-      Cadastrar primeiro produto
+    <a href="{% url 'products:create' %}" class="btn btn-primary" style="margin-top:1rem;">
+      Criar primeiro produto
     </a>
   </div>
 {% endif %}

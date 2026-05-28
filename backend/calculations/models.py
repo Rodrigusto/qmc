@@ -18,12 +18,13 @@ class FixedCost(BaseModel):
         "Categoria", max_length=20, choices=Category.choices, default=Category.OTHER
     )
     monthly_amount = models.DecimalField(
-        "Valor mensal (R$)", max_digits=10, decimal_places=2
+        "Valor mensal (R$)", max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]
     )
 
     class Meta:
         verbose_name = "Custo fixo"
         verbose_name_plural = "Custos fixos"
+        ordering = ["category", "name"]
 
     def __str__(self):
         return f"{self.name}: R$ {self.monthly_amount}"

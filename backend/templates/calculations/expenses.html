@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Despesas{% endblock %}
+{% block page_title %}Despesas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Despesas</h1>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+  {% include 'calculations/partials/_expense_form.html' %}
+</div>
+
+<div class="card" style="padding:0; overflow:hidden;">
+  {% include 'calculations/partials/_expense_table.html' %}
+</div>
+
+<script>
+function editExpense(pk, name, amount, date, note) {
+  document.getElementById('expense-pk').value        = pk;
+  document.querySelector('[name="name"]').value      = name;
+  document.querySelector('[name="amount"]').value    = amount;
+  document.querySelector('[name="date"]').value      = date;
+  document.querySelector('[name="note"]').value      = note || '';
+  document.querySelector('[name="name"]').focus();
+}
+
+function resetExpenseForm() {
+  document.getElementById('expense-pk').value        = '';
+  document.querySelector('[name="name"]').value      = '';
+  document.querySelector('[name="amount"]').value    = '';
+  document.querySelector('[name="note"]').value      = '';
+}
+</script>
+
+{% endblock %}

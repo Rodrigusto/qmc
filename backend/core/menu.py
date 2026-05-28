@@ -14,6 +14,16 @@ def get_menu():
             "section": "Estoque",
             "items": [
                 {
+                    "label": "Ingredientes",
+                    "icon": "🥬",
+                    "url": "/ingredientes/",
+                },
+                {
+                    "label": "Fornecedores",
+                    "icon": "🚚",
+                    "url": "/fornecedores/",
+                },
+                {
                     "label": "Compras",
                     "icon": "🛒",
                     "url": "/compras/",
@@ -23,11 +33,6 @@ def get_menu():
                     "icon": "📦",
                     "url": "/estoque/",
                 },
-                {
-                    "label": "Fornecedores",
-                    "icon": "🚚",
-                    "url": "/fornecedores/",
-                },
             ],
         },
         {
@@ -35,38 +40,8 @@ def get_menu():
             "items": [
                 {
                     "label": "Produtos",
-                    "icon": "📦",
+                    "icon": "🍔",
                     "url": "/produtos/",
-                }
-            ],
-        },
-        {
-            "section": "Calculos e Análises",
-            "items": [
-                {
-                    "label": "Custos fixos",
-                    "icon": "💰",
-                    "url": "/admin/calculations/fixedcost/",
-                },
-                {
-                    "label": "Despesas",
-                    "icon": "💸",
-                    "url": "/despesas/",
-                },
-                {
-                    "label": "GGF",
-                    "icon": "📊",
-                    "url": "/ggf/",
-                },
-                {
-                    "label": "Cálculos de custo",
-                    "icon": "⚙️",
-                    "url": "/calculos/",
-                },
-                {
-                    "label": "Previsão de vendas",
-                    "icon": "🔮",
-                    "url": "/previsao/",
                 },
             ],
         },
@@ -92,6 +67,36 @@ def get_menu():
                     "label": "Bairros",
                     "icon": "🏘️",
                     "url": "/bairros/",
+                },
+            ],
+        },
+        {
+            "section": "Calculos e Análises",
+            "items": [
+                {
+                    "label": "Custos fixos",
+                    "icon": "💰",
+                    "url": "/custos-fixos/",
+                },
+                {
+                    "label": "Despesas",
+                    "icon": "💸",
+                    "url": "/despesas/",
+                },
+                {
+                    "label": "GGF",
+                    "icon": "📊",
+                    "url": "/ggf/",
+                },
+                {
+                    "label": "Cálculos de custo",
+                    "icon": "⚙️",
+                    "url": "/calculos/",
+                },
+                {
+                    "label": "Previsão de vendas",
+                    "icon": "🔮",
+                    "url": "/previsao/",
                 },
             ],
         },

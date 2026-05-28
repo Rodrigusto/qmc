@@ -5,4 +5,4 @@ def menu(request):
     """
     Injeta o menu em todos os templates automaticamente.
     """
-    return {'menu': get_menu()}
+    return {"menu": get_menu()}

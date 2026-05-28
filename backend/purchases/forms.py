@@ -1,5 +1,5 @@
 from django import forms
-from .models import Purchase, Supplier #, PurchaseItem
+from .models import Purchase, Supplier  # , PurchaseItem
 from ingredients.models import Ingredient
 
 

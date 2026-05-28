@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestor de Custos para Hamburguerias</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <style>
+    body {
+      background: #1a1a18;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .hero {
+      text-align: center;
+      max-width: 560px;
+    }
+    .hero .emoji { font-size: 4rem; display: block; margin-bottom: 1rem; }
+    .hero h1 {
+      font-size: 2rem; font-weight: 700;
+      color: #f5a623; margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.1rem; color: #aaa;
+      line-height: 1.6; margin-bottom: 2rem;
+    }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; }
+    .btn-hero {
+      padding: 12px 28px; border-radius: 8px;
+      font-size: 1rem; font-weight: 600;
+      text-decoration: none; transition: opacity .2s;
+    }
+    .btn-hero:hover { opacity: .85; }
+    .btn-hero-primary { background: #f5a623; color: #1a1a18; }
+    .btn-hero-outline {
+      background: transparent;
+      border: 1px solid #444; color: #aaa;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem; margin-top: 3rem; width: 100%; max-width: 660px;
+    }
+    .feature {
+      background: #2a2a28; border-radius: 10px;
+      padding: 1.25rem; text-align: center;
+    }
+    .feature .icon { font-size: 1.75rem; margin-bottom: .5rem; }
+    .feature h3 { font-size: .95rem; color: #fff; margin-bottom: .25rem; }
+    .feature p  { font-size: .82rem; color: #888; }
+
+    .login-inblack-link a { color: #f5a623; text-decoration: none; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="emoji">🍔</span>
+  <h1>Gestor de Custos para Hamburguerias</h1>
+  <p>
+    Saiba exatamente quanto custa cada hambúrguer,
+    controle seu estoque e veja a saúde do seu negócio
+    em tempo real.
+  </p>
+  <div class="hero-btns">
+    <a href="{% url 'register_tenant' %}" class="btn-hero btn-hero-primary">
+      Criar conta grátis
+    </a>
+    <a href="#features" class="btn-hero btn-hero-outline">
+      Saiba mais
+    </a>
+    
+  </div>
+</div>
+
+<div class="login-inblack-link">
+    Já tem conta?
+    <a href="/login/">Entrar</a>
+</div>
+
+<div class="features" id="features">
+  <div class="feature">
+    <div class="icon">💰</div>
+    <h3>Custo real por produto</h3>
+    <p>Ingredientes + custos fixos + despesas rateados automaticamente</p>
+  </div>
+  <div class="feature">
+    <div class="icon">📦</div>
+    <h3>Controle de estoque</h3>
+    <p>Alertas de estoque baixo e custo médio ponderado</p>
+  </div>
+  <div class="feature">
+    <div class="icon">📈</div>
+    <h3>Dashboard completo</h3>
+    <p>Semáforo de saúde, previsão vs realizado, KPIs do dia</p>
+  </div>
+  <div class="feature">
+    <div class="icon">🛒</div>
+    <h3>Gestão de vendas</h3>
+    <p>iFood, Uber Eats, balcão e delivery próprio</p>
+  </div>
+</div>
+
+</body>
+</html>

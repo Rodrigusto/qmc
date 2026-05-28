@@ -1,0 +1,50 @@
+<div id="fixed-cost-table">
+  {% if costs %}
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Categoria</th>
+        <th>Valor mensal</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cost in costs %}
+      <tr>
+        <td><strong>{{ cost.name }}</strong></td>
+        <td>{{ cost.get_category_display }}</td>
+        <td>R$ {{ cost.monthly_amount|floatformat:2 }}</td>
+        <td style="display:flex; gap:.5rem;">
+          <button class="btn btn-outline btn-sm"
+                  onclick="editFixedCost('{{ cost.pk }}','{{ cost.name }}','{{ cost.category }}','{{ cost.monthly_amount }}')">
+            Editar
+          </button>
+          <button class="btn btn-danger btn-sm"
+                  hx-post="{% url 'calculations:fixed_cost_delete' cost.pk %}"
+                  hx-target="#fixed-cost-table"
+                  hx-swap="outerHTML"
+                  hx-confirm="Remover {{ cost.name }}?">
+            Remover
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div style="padding:.75rem 0; font-size:.9rem; color:#666; text-align:right;">
+    Total mensal:
+    <strong style="color:#f5a623;">
+      R$ {% with total=0 %}
+        {% for c in costs %}
+          {{ c.monthly_amount|add:total }}
+        {% endfor %}
+      {% endwith %}
+    </strong>
+  </div>
+  {% else %}
+  <div style="text-align:center; padding:2rem; color:#888;">
+    Nenhum custo fixo cadastrado ainda.
+  </div>
+  {% endif %}
+</div>

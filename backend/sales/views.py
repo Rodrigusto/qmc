@@ -1,7 +1,9 @@
 from django.views.generic import ListView, View, TemplateView
+
 # from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
+
 # from django.utils.decorators import method_decorator
 import datetime
 

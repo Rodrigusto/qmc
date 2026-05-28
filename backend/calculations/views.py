@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import CostCalculation, SalesForecast, FixedCost, Expense
 from .services import calculate_ggf, save_calculations
@@ -7,6 +7,120 @@ from products.models import Product
 from core.context import base_context
 from core.mixins import auth_required
 import datetime
+
+from django.views.generic import View
+from core.mixins import AuthMixin
+from .models import FixedCost, Expense
+from .forms import FixedCostForm, ExpenseForm
+
+
+class FixedCostListView(AuthMixin, View):
+    template_name = 'calculations/fixed_costs.html'
+
+    def get(self, request):
+        return render(request, self.template_name, self._context(request))
+
+    def post(self, request):
+        pk   = request.POST.get('pk')
+        form = FixedCostForm(
+            request.POST,
+            instance=FixedCost.objects.get(pk=pk) if pk else None
+        )
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.owner = request.user
+            obj.save()
+            # HTMX — retorna só a tabela atualizada
+            if request.htmx:
+                costs = FixedCost.objects.filter(is_active=True)
+                return render(request, 'calculations/partials/_fixed_cost_table.html', {
+                    'costs': costs
+                })
+            messages.success(request, 'Custo fixo salvo!')
+            return redirect('calculations:fixed_costs')
+
+        if request.htmx:
+            return render(request, 'calculations/partials/_fixed_cost_form.html', {
+                'form': form
+            })
+        return render(request, self.template_name, self._context(request, form))
+
+    def _context(self, request, form=None):
+        return {
+            'form':  form or FixedCostForm(),
+            'costs': FixedCost.objects.filter(is_active=True),
+        }
+
+
+class FixedCostDeleteView(AuthMixin, View):
+    def post(self, request, pk):
+        cost = get_object_or_404(FixedCost, pk=pk)
+        cost.is_active = False
+        cost.save()
+        if request.htmx:
+            costs = FixedCost.objects.filter(is_active=True)
+            return render(request, 'calculations/partials/_fixed_cost_table.html', {
+                'costs': costs
+            })
+        messages.success(request, 'Custo fixo removido.')
+        return redirect('calculations:fixed_costs')
+
+
+class ExpenseListView(AuthMixin, View):
+    template_name = 'calculations/expenses.html'
+
+    def get(self, request):
+        return render(request, self.template_name, self._context(request))
+
+    def post(self, request):
+        pk   = request.POST.get('pk')
+        form = ExpenseForm(
+            request.POST,
+            instance=Expense.objects.get(pk=pk) if pk else None
+        )
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.owner = request.user
+            obj.save()
+            if request.htmx:
+                expenses = self._expenses(request)
+                return render(request, 'calculations/partials/_expense_table.html', {
+                    'expenses': expenses
+                })
+            messages.success(request, 'Despesa salva!')
+            return redirect('calculations:expenses')
+
+        if request.htmx:
+            return render(request, 'calculations/partials/_expense_form.html', {
+                'form': form
+            })
+        return render(request, self.template_name, self._context(request, form))
+
+    def _expenses(self, request):
+        return Expense.objects.filter().order_by('-date')
+
+    def _context(self, request, form=None):
+        now = datetime.date.today()
+        return {
+            'form':     form or ExpenseForm(initial={'date': now}),
+            'expenses': self._expenses(request),
+        }
+
+
+class ExpenseDeleteView(AuthMixin, View):
+    def post(self, request, pk):
+        expense = get_object_or_404(Expense, pk=pk)
+        expense.is_active = False
+        expense.save()
+        if request.htmx:
+            expenses = Expense.objects.filter(
+                
+            ).order_by('-date')
+            return render(request, 'calculations/partials/_expense_table.html', {
+                'expenses': expenses
+            })
+        messages.success(request, 'Despesa removida.')
+        return redirect('calculations:expenses')
 
 
 @auth_required

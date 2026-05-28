@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+{# ── KPIs ── #}
+<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+
+  <div class="kpi-card">
+    <div class="kpi-label">Faturamento hoje</div>
+    <div class="kpi-value" style="color:#f5a623;">
+      R$ {{ faturamento_hoje|floatformat:2 }}
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">Faturamento do mês</div>
+    <div class="kpi-value" style="color:#f5a623;">
+      R$ {{ faturamento_mes|floatformat:2 }}
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">Vendas hoje</div>
+    <div class="kpi-value" style="color:#0F6E56;">
+      {{ qtd_vendas_hoje }}
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">Ticket médio</div>
+    <div class="kpi-value" style="color:#534AB7;">
+      R$ {{ ticket_medio|floatformat:2 }}
+    </div>
+  </div>
+
+</div>
+
+{# ── Semáforo de produtos ── #}
+{% if semaforo_produtos %}
+<div class="card" style="margin-bottom:1rem;">
+  <div class="card-title" style="margin-bottom:1rem;">
+    🚦 Saúde dos produtos
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem;">
+    {% for p in semaforo_produtos %}
+    <div style="
+      border-radius:8px; padding:1rem;
+      border:2px solid {% if p.status == 'green' %}#4caf50{% elif p.status == 'yellow' %}#ff9800{% elif p.status == 'red' %}#e24b4a{% else %}#ccc{% endif %};
+      background:{% if p.status == 'green' %}#f0faf0{% elif p.status == 'yellow' %}#fffbf0{% elif p.status == 'red' %}#fff5f5{% else %}#f8f8f8{% endif %};">
+      <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:.5rem;">
+        <div style="
+          width:14px; height:14px; border-radius:50%; flex-shrink:0;
+          background:{% if p.status == 'green' %}#4caf50{% elif p.status == 'yellow' %}#ff9800{% elif p.status == 'red' %}#e24b4a{% else %}#ccc{% endif %};">
+        </div>
+        <strong style="font-size:.95rem;">{{ p.name }}</strong>
+        <span style="margin-left:auto; font-size:.75rem; font-weight:600;
+          color:{% if p.status == 'green' %}#3b6d11{% elif p.status == 'yellow' %}#854f0b{% elif p.status == 'red' %}#a32d2d{% else %}#888{% endif %};">
+          {{ p.label }}
+        </span>
+      </div>
+      <div class="cost-row" style="padding:4px 0;">
+        <span style="font-size:.82rem; color:#666;">Custo</span>
+        <span style="font-size:.82rem;">R$ {{ p.custo|floatformat:2 }}</span>
+      </div>
+      <div class="cost-row" style="padding:4px 0;">
+        <span style="font-size:.82rem; color:#666;">Preço venda</span>
+        <span style="font-size:.82rem;">R$ {{ p.preco|floatformat:2 }}</span>
+      </div>
+      <div class="cost-row" style="padding:4px 0; border:none;">
+        <span style="font-size:.82rem; color:#666;">Margem</span>
+        <span style="font-size:.9rem; font-weight:700;
+          color:{% if p.status == 'green' %}#3b6d11{% elif p.status == 'yellow' %}#854f0b{% elif p.status == 'red' %}#a32d2d{% else %}#888{% endif %};">
+          {{ p.margem|floatformat:1 }}%
+        </span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ── Saúde financeira + Estoque ── #}
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+
+  {# Saúde financeira #}
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1rem;">💰 Saúde financeira</div>
+
+    <div style="margin-bottom:1rem;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:.35rem; font-size:.85rem;">
+        <span>Custos fixos / faturamento</span>
+        <strong style="color:{% if saude_fixos == 'green' %}#3b6d11{% elif saude_fixos == 'yellow' %}#854f0b{% else %}#a32d2d{% endif %};">
+          {{ pct_fixos }}%
+        </strong>
+      </div>
+      <div style="background:#f0efe8; border-radius:99px; height:8px; overflow:hidden;">
+        <div style="
+          height:8px; border-radius:99px; transition:width .4s;
+          width:{{ pct_fixos|floatformat:0 }}%;
+          background:{% if saude_fixos == 'green' %}#4caf50{% elif saude_fixos == 'yellow' %}#ff9800{% else %}#e24b4a{% endif %};">
+        </div>
+      </div>
+      <div style="font-size:.78rem; color:#888; margin-top:.25rem;">
+        R$ {{ total_fixos|floatformat:2 }} em custos fixos
+      </div>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:.35rem; font-size:.85rem;">
+        <span>Despesas / faturamento</span>
+        <strong style="color:{% if saude_despesas == 'green' %}#3b6d11{% elif saude_despesas == 'yellow' %}#854f0b{% else %}#a32d2d{% endif %};">
+          {{ pct_despesas }}%
+        </strong>
+      </div>
+      <div style="background:#f0efe8; border-radius:99px; height:8px; overflow:hidden;">
+        <div style="
+          height:8px; border-radius:99px; transition:width .4s;
+          width:{% if pct_despesas > 100 %}100{% else %}{{ pct_despesas|floatformat:0 }}{% endif %}%;
+          background:{% if saude_despesas == 'green' %}#4caf50{% elif saude_despesas == 'yellow' %}#ff9800{% else %}#e24b4a{% endif %};">
+        </div>
+      </div>
+      <div style="font-size:.78rem; color:#888; margin-top:.25rem;">
+        R$ {{ total_despesas|floatformat:2 }} em despesas no mês
+      </div>
+    </div>
+
+    {# Previsão vs realizado #}
+    {% if previsao_data %}
+    <div style="border-top:1px solid #f0efe8; padding-top:1rem; margin-top:.5rem;">
+      <div style="font-size:.85rem; font-weight:600; margin-bottom:.75rem;">
+        Previsão × Realizado
+      </div>
+      {% for item in previsao_data %}
+      <div style="margin-bottom:.75rem;">
+        <div style="display:flex; justify-content:space-between; font-size:.82rem; margin-bottom:.25rem;">
+          <span>{{ item.product }}</span>
+          <span style="color:{% if item.status == 'green' %}#3b6d11{% elif item.status == 'yellow' %}#854f0b{% else %}#a32d2d{% endif %};">
+            {{ item.realizado }}/{{ item.previsto }} un · {{ item.pct }}%
+          </span>
+        </div>
+        <div style="background:#f0efe8; border-radius:99px; height:6px; overflow:hidden;">
+          <div style="
+            height:6px; border-radius:99px;
+            width:{% if item.pct > 100 %}100{% else %}{{ item.pct|floatformat:0 }}{% endif %}%;
+            background:{% if item.status == 'green' %}#4caf50{% elif item.status == 'yellow' %}#ff9800{% else %}#e24b4a{% endif %};">
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {# Alertas de estoque #}
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1rem;">📦 Estoque</div>
+
+    {% if estoque_alertas %}
+      <div style="margin-bottom:.75rem; font-size:.8rem; font-weight:600; color:#a32d2d;">
+        ⚠ Requer atenção
+      </div>
+      {% for item in estoque_alertas %}
+      <div style="
+        display:flex; align-items:center; justify-content:space-between;
+        padding:.5rem .75rem; border-radius:6px; margin-bottom:.4rem;
+        background:{% if item.status == 'red' %}#fff5f5{% else %}#fffbf0{% endif %};">
+        <div style="display:flex; align-items:center; gap:.6rem;">
+          <div style="
+            width:10px; height:10px; border-radius:50%; flex-shrink:0;
+            background:{% if item.status == 'red' %}#e24b4a{% else %}#ff9800{% endif %};">
+          </div>
+          <span style="font-size:.875rem;">{{ item.name }}</span>
+        </div>
+        <span style="font-size:.82rem; font-weight:600;
+          color:{% if item.status == 'red' %}#a32d2d{% else %}#854f0b{% endif %};">
+          {{ item.quantity|floatformat:1 }} {{ item.unit }} · {{ item.label }}
+        </span>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if estoque_ok %}
+      <div style="margin-top:{% if estoque_alertas %}.75rem{% else %}0{% endif %};
+                  margin-bottom:.5rem; font-size:.8rem; font-weight:600; color:#3b6d11;">
+        ✓ Em dia
+      </div>
+      {% for item in estoque_ok %}
+      <div style="
+        display:flex; align-items:center; justify-content:space-between;
+        padding:.4rem .75rem; border-radius:6px; margin-bottom:.3rem;
+        background:#f0faf0;">
+        <div style="display:flex; align-items:center; gap:.6rem;">
+          <div style="width:10px; height:10px; border-radius:50%; background:#4caf50; flex-shrink:0;"></div>
+          <span style="font-size:.875rem;">{{ item.name }}</span>
+        </div>
+        <span style="font-size:.82rem; color:#3b6d11;">
+          {{ item.quantity|floatformat:1 }} {{ item.unit }}
+        </span>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if not estoque_alertas and not estoque_ok %}
+      <div style="text-align:center; padding:2rem; color:#888; font-size:.875rem;">
+        Nenhum item em estoque ainda.
+        <br>
+        <a href="{% url 'purchases:new' %}" style="color:#f5a623;">Registrar compra</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{# ── Gráfico + Últimas vendas ── #}
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+
+  {# Gráfico semana #}
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1rem;">📈 Vendas da semana</div>
+    <canvas id="weekChart" height="160"></canvas>
+  </div>
+
+  {# Últimas vendas + Mais vendidos #}
+  <div class="card" style="padding:0; overflow:hidden;">
+    <div style="padding:1rem 1.5rem .75rem; font-weight:600;">🛒 Últimas vendas</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Produto(s)</th>
+          <th>Canal</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sale in ultimas_vendas %}
+        <tr>
+          <td>
+            {% for item in sale.items.all %}
+              <span style="font-size:.82rem;">
+                {{ item.product.name }} ×{{ item.quantity }}
+              </span>
+              {% if not forloop.last %}<br>{% endif %}
+            {% endfor %}
+          </td>
+          <td style="font-size:.82rem; color:#666;">{{ sale.channel.name }}</td>
+          <td style="font-weight:600; color:#f5a623; white-space:nowrap;">
+            R$ {{ sale.total|floatformat:2 }}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3" style="text-align:center; color:#888; padding:1.5rem;">
+            Nenhuma venda hoje ainda.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if mais_vendidos %}
+    <div style="padding:1rem 1.5rem .75rem; font-weight:600; border-top:1px solid #f0efe8; margin-top:.5rem;">
+      🏆 Mais vendidos no mês
+    </div>
+    <table>
+      <thead>
+        <tr><th>Produto</th><th>Unidades</th><th>Faturamento</th></tr>
+      </thead>
+      <tbody>
+        {% for item in mais_vendidos %}
+        <tr>
+          <td>{{ item.product__name }}</td>
+          <td>{{ item.total_units }}</td>
+          <td>R$ {{ item.total_revenue|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+
+</div>
+
+{# Chart.js #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('weekChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ semana_labels|safe }},
+    datasets: [{
+      label: 'Faturamento (R$)',
+      data:  {{ semana_json|safe }},
+      backgroundColor: 'rgba(245,166,35,0.7)',
+      borderColor:     'rgba(245,166,35,1)',
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => 'R$ ' + ctx.parsed.y.toFixed(2)
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: val => 'R$ ' + val.toFixed(0)
+        }
+      }
+    }
+  }
+});
+</script>
+
+{% endblock %}
